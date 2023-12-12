@@ -1,0 +1,17 @@
+D:\Godot\Minecraft\.godot\mono\temp\bin\Debug\Minecraft.deps.json
+D:\Godot\Minecraft\.godot\mono\temp\bin\Debug\Minecraft.runtimeconfig.json
+D:\Godot\Minecraft\.godot\mono\temp\bin\Debug\Minecraft.dll
+D:\Godot\Minecraft\.godot\mono\temp\bin\Debug\Minecraft.pdb
+D:\Godot\Minecraft\.godot\mono\temp\bin\Debug\GodotSharp.dll
+D:\Godot\Minecraft\.godot\mono\temp\bin\Debug\GodotSharpEditor.dll
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\Minecraft.csproj.AssemblyReference.cache
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\Minecraft.GeneratedMSBuildEditorConfig.editorconfig
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\Minecraft.AssemblyInfoInputs.cache
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\Minecraft.AssemblyInfo.cs
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\Minecraft.csproj.CoreCompileInputs.cache
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\Minecraft.csproj.CopyComplete
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\Minecraft.dll
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\refint\Minecraft.dll
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\Minecraft.pdb
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\Minecraft.genruntimeconfig.cache
+D:\Godot\Minecraft\.godot\mono\temp\obj\Debug\ref\Minecraft.dll

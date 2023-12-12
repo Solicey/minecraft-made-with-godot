@@ -1,0 +1,31 @@
+[gd_scene load_steps=8 format=3 uid="uid://bhlb362fkean6"]
+
+[ext_resource type="Script" path="res://Scripts/Server.cs" id="1_hr3xd"]
+[ext_resource type="Script" path="res://Scripts/PlayerSpawner.cs" id="1_ivhcq"]
+[ext_resource type="Script" path="res://Scripts/GameManager.cs" id="1_veq1b"]
+[ext_resource type="PackedScene" uid="uid://c2migx3psh2uh" path="res://Scenes/World.tscn" id="3_ka0dc"]
+[ext_resource type="PackedScene" uid="uid://uq6uks7lnks" path="res://Scenes/UiManager.tscn" id="4_63hx3"]
+[ext_resource type="Script" path="res://Scripts/Client.cs" id="5_bqqkk"]
+[ext_resource type="PackedScene" uid="uid://cgnp7juxesnfe" path="res://Scenes/Player.tscn" id="5_ck88u"]
+
+[node name="MainScene" type="Node" node_paths=PackedStringArray("_uiManager", "_server", "_client")]
+script = ExtResource("1_veq1b")
+_uiManager = NodePath("UIManager")
+_server = NodePath("Server")
+_client = NodePath("Client")
+
+[node name="UIManager" parent="." instance=ExtResource("4_63hx3")]
+
+[node name="World" parent="." instance=ExtResource("3_ka0dc")]
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+spawn_path = NodePath("..")
+script = ExtResource("1_ivhcq")
+_playerScene = ExtResource("5_ck88u")
+
+[node name="Server" type="Node" parent="." node_paths=PackedStringArray("_multiplayerSpawner")]
+script = ExtResource("1_hr3xd")
+_multiplayerSpawner = NodePath("../MultiplayerSpawner")
+
+[node name="Client" type="Node" parent="."]
+script = ExtResource("5_bqqkk")

@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "C7zVcAPavvfuE/A2QIAHON/Z34TvxXIdBU6zmrmgRxacR2pPmfLRcoxxxoHc6L8T8rDPNuIbbv2e+5oM9A9j6Q==",
+  "success": true,
+  "projectFilePath": "D:\\Godot\\Minecraft\\Minecraft.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Sky\\.nuget\\packages\\godot.sourcegenerators\\4.2.0\\godot.sourcegenerators.4.2.0.nupkg.sha512",
+    "C:\\Users\\Sky\\.nuget\\packages\\godotsharp\\4.2.0\\godotsharp.4.2.0.nupkg.sha512",
+    "C:\\Users\\Sky\\.nuget\\packages\\godotsharpeditor\\4.2.0\\godotsharpeditor.4.2.0.nupkg.sha512"
+  ],
+  "logs": []
+}

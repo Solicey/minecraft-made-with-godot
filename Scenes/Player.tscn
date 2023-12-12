@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://cgnp7juxesnfe"]
+
+[ext_resource type="Script" path="res://Scripts/Player.cs" id="1_p3810"]
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pdxt8"]
+properties/0/path = NodePath(".:NameTag")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_p3810")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_pdxt8")

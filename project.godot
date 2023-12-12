@@ -1,0 +1,29 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Minecraft"
+run/main_scene="res://Scenes/MainScene.tscn"
+config/features=PackedStringArray("4.2", "C#", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+GameVariables="*res://Scripts/GameVariables.cs"
+BlockManager="*res://Scripts/BlockManager.cs"
+
+[dotnet]
+
+project/assembly_name="Minecraft"
+
+[editor]
+
+naming/scene_name_casing=1

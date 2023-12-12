@@ -1,0 +1,6 @@
+res://Scenes/UiManager.tscn
+res://Resources/Blocks/Air.tres
+res://Scenes/MainScene.tscn
+res://Scenes/Player.tscn
+res://Scenes/World.tscn
+res://Scenes/Chunk.tscn

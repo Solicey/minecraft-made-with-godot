@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Block" load_steps=3 format=3 uid="uid://doc1rcb4lwu68"]
+
+[ext_resource type="Texture2D" uid="uid://nogcns3yelyd" path="res://Resources/Textures/dirt.png" id="1_ky72r"]
+[ext_resource type="Script" path="res://Scripts/Block.cs" id="1_pn417"]
+
+[resource]
+script = ExtResource("1_pn417")
+Type = 1
+MainTexture = ExtResource("1_ky72r")

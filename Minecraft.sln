@@ -1,0 +1,19 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minecraft", "Minecraft.csproj", "{ECF26CC5-7418-44ED-98C6-A995CC9C055B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+	Debug|Any CPU = Debug|Any CPU
+	ExportDebug|Any CPU = ExportDebug|Any CPU
+	ExportRelease|Any CPU = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ECF26CC5-7418-44ED-98C6-A995CC9C055B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECF26CC5-7418-44ED-98C6-A995CC9C055B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECF26CC5-7418-44ED-98C6-A995CC9C055B}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{ECF26CC5-7418-44ED-98C6-A995CC9C055B}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{ECF26CC5-7418-44ED-98C6-A995CC9C055B}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{ECF26CC5-7418-44ED-98C6-A995CC9C055B}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+	EndGlobalSection
+EndGlobal
