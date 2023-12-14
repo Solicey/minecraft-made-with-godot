@@ -6,4 +6,6 @@
 [resource]
 script = ExtResource("1_pn417")
 Type = 1
+Outlook = 0
 MainTexture = ExtResource("1_ky72r")
+IsTransparent = false

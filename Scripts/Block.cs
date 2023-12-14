@@ -11,11 +11,19 @@ namespace MC
         Grass
     }
 
-    [Tool]
+    public enum Outlook
+    {
+        Cubic,
+        Billboard,
+        Stair
+    }
+
     [GlobalClass]
     public partial class Block : Resource
     {
         [Export] public BlockType Type { get; set; }
+
+        [Export] public Outlook Outlook { get; set; }
 
         [Export] public Texture2D MainTexture { get; set; }
 

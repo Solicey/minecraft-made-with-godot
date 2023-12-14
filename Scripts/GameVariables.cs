@@ -1,31 +1,71 @@
 using Godot;
 using System;
+using System.Threading.Tasks;
 
 namespace MC
 {
     public partial class GameVariables : Node
     {
-        public byte[] AuthData { get; private set; } = new byte[] { 20, 3, 12, 31 };
+        public static byte[] AuthData { get; private set; } = new byte[] { 20, 3, 12, 31 };
 
-        public int ServerId { get; private set; } = 1;
+        public static int ServerId { get; private set; } = 1;
 
-        public GameStartInfo GameStartInfo { get; set; }
+        public static int RenderChunkCount { get { return (RenderChunkDistance * 2 + 1) * (RenderChunkDistance * 2 + 1); } }
+        
+        public static int RenderChunkDistance { get; private set; } = 2;
 
-        public Player LocalPlayer { get; set; }
+        public static Vector3I ChunkShape { get; private set; } = new Vector3I(16, 64, 16);
 
-        [Signal] public delegate void ClientJoinGameStateChangedEventHandler(ClientJoinGameState state);
-        public ClientJoinGameState ClientJoinGameState
+        public static Vector3 PlayerSpawnPosition { get; private set; } = new Vector3(0, 64, 0);
+
+        public static float Gravity { get; private set; } = 9.8f;
+
+        public GameStartInfo GameStartInfo
         {
-            get
-            {
-                return _clientJoinGameState;
-            }
+            get {  return _gameStartInfo; }
             set
             {
-                _clientJoinGameState = value;
-                EmitSignal(SignalName.ClientJoinGameStateChanged, _clientJoinGameState);
+                _gameStartInfo = value;
+                Seed = value.Seed;
             }
         }
-        ClientJoinGameState _clientJoinGameState;
+        GameStartInfo _gameStartInfo;
+
+        [Signal] public delegate void LocalPlayerSetEventHandler();
+        public Player LocalPlayer
+        {
+            get { return _localPlayer; }
+            set
+            {
+                _localPlayer = value;
+                EmitSignal(SignalName.LocalPlayerSet);
+            }
+        }
+        Player _localPlayer = null;
+
+        [Signal] public delegate void SeedSetEventHandler(uint seed);
+        public uint Seed
+        {
+            get { return GameStartInfo.Seed; }
+            set
+            {
+                GameStartInfo.Seed = value;
+                EmitSignal(SignalName.SeedSet, value);
+            }
+        }
+
+        [Signal] public delegate void ClientLatestStateChangedEventHandler(int state);
+        public ClientState ClientLatestState
+        {
+            get { return _clientLatestState; }
+            set
+            {
+                _clientLatestState = value;
+                EmitSignal(SignalName.ClientLatestStateChanged, (int)_clientLatestState);
+            }
+        }
+        ClientState _clientLatestState;
+
+        
     }
 }

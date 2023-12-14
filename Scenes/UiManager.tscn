@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/UIManager.cs" id="1_3853v"]
 
-[node name="UIManager" type="Control" node_paths=PackedStringArray("_hostButton", "_joinButton", "_addressEntry", "_portEntry", "_nameEntry", "_gameLoadingPanel", "_loadingMessageLabel", "_returnToMenuButton")]
+[node name="UIManager" type="Control" node_paths=PackedStringArray("_hostButton", "_joinButton", "_addressEntry", "_portEntry", "_nameEntry", "_seedEntry", "_gameLoadingPanel", "_loadingMessageLabel", "_returnToMenuButton")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,6 +15,7 @@ _joinButton = NodePath("MainMenuPanel/JoinButton")
 _addressEntry = NodePath("MainMenuPanel/AddressEntry")
 _portEntry = NodePath("MainMenuPanel/PortEntry")
 _nameEntry = NodePath("MainMenuPanel/NameEntry")
+_seedEntry = NodePath("MainMenuPanel/SeedEntry")
 _gameLoadingPanel = NodePath("GameLoadingPanel")
 _loadingMessageLabel = NodePath("GameLoadingPanel/LoadingMessageLabel")
 _returnToMenuButton = NodePath("GameLoadingPanel/ReturnToMenuButton")
@@ -63,6 +64,13 @@ offset_left = 36.0
 offset_top = 148.0
 offset_right = 300.0
 offset_bottom = 220.0
+
+[node name="SeedEntry" type="TextEdit" parent="MainMenuPanel"]
+layout_mode = 0
+offset_left = 339.0
+offset_top = 150.0
+offset_right = 486.0
+offset_bottom = 222.0
 
 [node name="GameLoadingPanel" type="Panel" parent="."]
 visible = false

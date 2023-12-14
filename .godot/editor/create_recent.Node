@@ -1,11 +1,15 @@
+RayCast3D
+Camera3D
+Node3D
 CollisionShape3D
+Node
+WorldEnvironment
+MeshInstance3D
 StaticBody3D
 MultiplayerSynchronizer
 Button
 Label
 Panel
-Node
 TextEdit
 CharacterBody3D
-Node3D
 MultiplayerSpawner

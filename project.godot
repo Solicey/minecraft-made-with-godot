@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 GameVariables="*res://Scripts/GameVariables.cs"
 BlockManager="*res://Scripts/BlockManager.cs"
+RpcFunctions="*res://Scripts/RPCFunctions.cs"
 
 [dotnet]
 

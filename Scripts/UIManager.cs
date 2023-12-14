@@ -14,6 +14,7 @@ namespace MC
         [Export] TextEdit _addressEntry;
         [Export] TextEdit _portEntry;
         [Export] TextEdit _nameEntry;
+        [Export] TextEdit _seedEntry;
 
         [Export] Panel _gameLoadingPanel;
         [Export] Label _loadingMessageLabel;
@@ -30,9 +31,10 @@ namespace MC
             _addressEntry.Text = _defaultAddress;
             _portEntry.Text = _defaultPort;
             _nameEntry.Text = _defaultName;
+            _seedEntry.Text = GD.Randi().ToString();
 
             _variables = GetNode<GameVariables>("/root/GameVariables");
-            _variables.ClientJoinGameStateChanged += OnClientJoinGameStateChanged;
+            _variables.ClientLatestStateChanged += OnClientLatestStateChanged;
         }
 
         public void OnHostButtonPressed()
@@ -41,7 +43,8 @@ namespace MC
             {
                 Address = _addressEntry.Text,
                 Port = GetPort(),
-                PlayerName = _nameEntry.Text
+                PlayerName = _nameEntry.Text,
+                Seed = GetSeed()
             });
         }
 
@@ -51,7 +54,8 @@ namespace MC
             {
                 Address = _addressEntry.Text,
                 Port = GetPort(),
-                PlayerName = _nameEntry.Text
+                PlayerName = _nameEntry.Text,
+                Seed = GetSeed()
             });
         }
 
@@ -66,28 +70,20 @@ namespace MC
             return int.TryParse(_portEntry.Text, out var port) ? port : int.Parse(_defaultPort);
         }
 
-        void OnClientJoinGameStateChanged(ClientJoinGameState state)
+        uint GetSeed()
         {
-            GD.Print($"Client connection state message: {state.Message}");
-            _loadingMessageLabel.Text = state.Message;
-            switch (state.CurrentStep)
-            {
-                case ClientJoinGameStep.NotJoined:
-                    _joinButton.Disabled = false;
-                    _gameLoadingPanel.Visible = true;
-                    _returnToMenuButton.Visible = true;
-                    break;
-                case ClientJoinGameStep.Joining:
-                    _joinButton.Disabled = true;
-                    _gameLoadingPanel.Visible = true;
-                    _returnToMenuButton.Visible = false;
-                    break;
-                case ClientJoinGameStep.Joined:
-                    _joinButton.Disabled = true;
-                    _gameLoadingPanel.Visible = false;
-                    _returnToMenuButton.Visible = true;
-                    break;
-            }
+            return uint.TryParse(_seedEntry.Text, out var seed) ? seed : GD.Randi();
+        }
+
+        void OnClientLatestStateChanged(int state)
+        {
+            //GD.Print($"Client connection state message: {state.Message}");
+            //_loadingMessageLabel.Text = state.Message;
+
+            var clientState = (ClientState)state;
+            GD.Print($"Client state: {clientState}");
+
+
         }
 
         

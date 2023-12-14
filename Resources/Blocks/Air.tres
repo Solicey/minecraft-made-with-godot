@@ -5,4 +5,5 @@
 [resource]
 script = ExtResource("1_lgyke")
 Type = 0
+Outlook = 0
 IsTransparent = true

@@ -6,29 +6,29 @@ using System.Threading.Tasks;
 
 namespace MC
 {
-    public enum ClientJoinGameStep
+    public enum ClientState
     {
-        NotJoined,
-        Joining,
-        Joined
-    }
-
-    public partial class ClientJoinGameState : GodotObject
-    {
-        public ClientJoinGameStep CurrentStep { get; set; }
-        public string Message { get; set; }
+        Closed,
+        Connecting,
+        Connected,
+        CanNotCreate,
+        TimeOut,
+        Disconnected,
+        PlayerSynced_SyncingWorldSeed,
+        WorldSeedSynced_CreatingWorld,
+        WorldCreated,
+        InGame
     }
 
     public partial class Client : Node
     {
         GameVariables _variables;
+        RPCFunctions _rpcFunctions;
         SceneMultiplayer _multiplayer;
         ENetMultiplayerPeer _peer; 
 
         [Export] float _timeOutTime = 3.0f;
         Timer _timeOutTimer = new Timer();
-
-        [Signal] public delegate void CreateClientFinishedEventHandler();
 
         public bool IsConnectedToServer()
         {
@@ -38,24 +38,36 @@ namespace MC
         public override void _Ready()
         {
             _variables = GetNode<GameVariables>("/root/GameVariables");
+            _rpcFunctions = GetNode<RPCFunctions>("/root/RpcFunctions");
 
             AddChild(_timeOutTimer);
             _timeOutTimer.OneShot = true;
             _timeOutTimer.Timeout += () =>
             {
-                if (IsConnectedToServer())
-                    return;
-                SetClientJoinGameState(ClientJoinGameStep.NotJoined, "Failed to connect to server: Timeout");
-                EmitSignal(SignalName.CreateClientFinished);
+                if (_variables.ClientLatestState == ClientState.Connecting) 
+                    _variables.ClientLatestState = ClientState.TimeOut;
+            };
+
+            _variables.LocalPlayerSet += () =>
+            {
+                if (_variables.ClientLatestState == ClientState.Connected)
+                    _variables.ClientLatestState = ClientState.PlayerSynced_SyncingWorldSeed;
+            };
+
+            _variables.SeedSet += (uint seed) =>
+            {
+                GD.Print("Seed set!");
+                if (_variables.ClientLatestState == ClientState.PlayerSynced_SyncingWorldSeed)
+                    _variables.ClientLatestState = ClientState.WorldSeedSynced_CreatingWorld;
             };
             
         }
 
         public async Task<bool> CreateClient(string address, int port)
         {
-            SetClientJoinGameState(ClientJoinGameStep.Joining, "Connecting to server...");
-
             Reset();
+
+            _variables.ClientLatestState = ClientState.Connecting;
 
             _multiplayer = new(); 
             _multiplayer.AuthCallback = new Callable(this, nameof(OnAuthReceived));
@@ -73,7 +85,7 @@ namespace MC
             if (error != Error.Ok)
             {
                 GD.PrintErr($"Create client failed: {error}");
-                SetClientJoinGameState(ClientJoinGameStep.NotJoined, $"Failed to connect to server: {error}");
+                _variables.ClientLatestState = ClientState.CanNotCreate;
                 return false;
             }
 
@@ -81,30 +93,48 @@ namespace MC
 
             _timeOutTimer.Start(_timeOutTime);
 
-            if (IsConnectedToServer())
+            return await WaitForNewClientState(ClientState.Connected);
+        }
+
+        public async Task<bool> SyncSeed()
+        {
+            _rpcFunctions.RpcId(GameVariables.ServerId, nameof(SyncSeed), Multiplayer.GetUniqueId(), 0);
+
+            return await WaitForNewClientState(ClientState.WorldSeedSynced_CreatingWorld);
+        }
+
+        public async Task<bool> WaitForNewClientState(ClientState targetState)
+        {
+            //GD.Print($"Wait for client state: {targetState}");
+            if (_variables.ClientLatestState == targetState)
+            {
+                //GD.Print("Wait for client state: return immediately");
                 return true;
-
-            await ToSignal(this, SignalName.CreateClientFinished);
-
-            return IsConnectedToServer();
+            }
+            else
+            {
+                //GD.Print("Wait for client state: have to wait");
+                await ToSignal(_variables, GameVariables.SignalName.ClientLatestStateChanged);
+            }
+            //GD.Print("Wait for client state: end waiting");
+            return _variables.ClientLatestState == targetState;
         }
 
         void OnConnectedToServer()
         {
             GD.Print($"Connected to server!");
-            SetClientJoinGameState(ClientJoinGameStep.Joining, "Connected to server");
-            EmitSignal(SignalName.CreateClientFinished);
+            _variables.ClientLatestState = ClientState.Connected;
         }
 
         void OnServerDisconnected()
         {
-            SetClientJoinGameState(ClientJoinGameStep.NotJoined, "Disconnected from server");
             GD.Print($"Disconnected from server!");
+            _variables.ClientLatestState = ClientState.Disconnected;
         }
 
         void OnPeerAuthenticating(long id)
         {
-            var error = _multiplayer.SendAuth((int)id, _variables.AuthData);
+            var error = _multiplayer.SendAuth((int)id, GameVariables.AuthData);
             if (error != Error.Ok)
             {
                 GD.PrintErr($"Send auth failed: {error}");
@@ -113,7 +143,7 @@ namespace MC
 
         void OnAuthReceived(int id, byte[] data)
         {
-            if (!_variables.AuthData.SequenceEqual(data))
+            if (!GameVariables.AuthData.SequenceEqual(data))
             {
                 GD.PrintErr($"Auth not match!");
                 return;
@@ -130,15 +160,8 @@ namespace MC
                 _peer = null;
             }
             _multiplayer = null;
-        }
 
-        void SetClientJoinGameState(ClientJoinGameStep step, string msg)
-        {
-            _variables.ClientJoinGameState = new ClientJoinGameState
-            {
-                CurrentStep = step,
-                Message = msg
-            };
+            _variables.ClientLatestState = ClientState.Closed;
         }
     }
 }

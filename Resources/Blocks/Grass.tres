@@ -8,6 +8,8 @@
 [resource]
 script = ExtResource("1_vpxmw")
 Type = 3
+Outlook = 0
 MainTexture = ExtResource("2_2u6i7")
 TopTexture = ExtResource("3_v0qc1")
 BottomTexture = ExtResource("1_3ras0")
+IsTransparent = false

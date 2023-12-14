@@ -1,0 +1,7 @@
+list=[{
+"base": &"Resource",
+"class": &"Block",
+"icon": "",
+"language": &"C#",
+"path": "res://Scripts/Block.cs"
+}]

@@ -10,16 +10,43 @@ namespace MC
 
         GameVariables _variables;
 
+        [Export] Camera3D _camera;
+        [Export] RayCast3D _rayCast;
+
+
         public override void _Ready()
         {
             if (!IsMultiplayerAuthority())
                 return;
 
+            _camera.Visible = true;
+
             _variables = GetNode<GameVariables>("/root/GameVariables");
             
             NameTag = _variables.GameStartInfo.PlayerName;
 
-            _variables.LocalPlayer = this;
+            _variables.LocalPlayer = this;  // Should send signal
+
+            Position = GameVariables.PlayerSpawnPosition;
+        }
+
+        public override void _PhysicsProcess(double delta)
+        {
+            if (!IsMultiplayerAuthority())
+                return;
+
+            ProcessInput(delta);
+            ProcessMovement(delta);
+        }
+
+        void ProcessInput(double delta)
+        {
+
+        }
+
+        void ProcessMovement(double delta)
+        {
+
         }
     }
 }

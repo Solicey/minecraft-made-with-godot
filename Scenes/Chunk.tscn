@@ -1,5 +1,15 @@
-[gd_scene format=3 uid="uid://dhjxscuu0ix61"]
+[gd_scene load_steps=3 format=3 uid="uid://dhjxscuu0ix61"]
 
-[node name="Chunk" type="StaticBody3D"]
+[ext_resource type="Script" path="res://Scripts/Chunk.cs" id="1_sjw8k"]
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_mo6y7"]
+
+[node name="Chunk" type="StaticBody3D" node_paths=PackedStringArray("_collisionShape", "_meshInstance")]
+script = ExtResource("1_sjw8k")
+_collisionShape = NodePath("CollisionShape3D")
+_meshInstance = NodePath("MeshInstance3D")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("ConcavePolygonShape3D_mo6y7")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]

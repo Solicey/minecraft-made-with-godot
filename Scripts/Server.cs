@@ -4,6 +4,11 @@ using System.Linq;
 
 namespace MC
 {
+    public enum ServerState
+    {
+        
+    }
+
     public partial class Server : Node
     {
         [Export] MultiplayerSpawner _multiplayerSpawner;
@@ -42,7 +47,7 @@ namespace MC
 
             GD.Print($"Create server on port {port}!");
 
-            _multiplayerSpawner.Spawn(_variables.ServerId);
+            _multiplayerSpawner.Spawn(GameVariables.ServerId);
 
             return true;
         }
@@ -70,7 +75,7 @@ namespace MC
 
         void OnPeerAuthenticating(long id)
         {
-            var error = _multiplayer.SendAuth((int)id, _variables.AuthData);
+            var error = _multiplayer.SendAuth((int)id, GameVariables.AuthData);
             if (error != Error.Ok)
             {
                 GD.PrintErr($"Send auth failed: {error}");
@@ -84,7 +89,7 @@ namespace MC
 
         void OnAuthReceived(int id, byte[] data)
         {
-            if (!_variables.AuthData.SequenceEqual(data))
+            if (!GameVariables.AuthData.SequenceEqual(data))
             {
                 GD.PrintErr($"Auth not match!");
                 return;
