@@ -36,12 +36,13 @@ namespace MC
         {
             _blockManager = GetNode<BlockManager>("/root/BlockManager");
 
-            _shape = GameVariables.ChunkShape;
+            _shape = Global.ChunkShape;
             _blockTypeArray = new BlockType[_shape.X, _shape.Y, _shape.Z];
         }
 
         public async Task SyncData(Vector2I chunkPos, TerrainGenerator generator)
         {
+            _meshInstance.Mesh = null;
             ChunkPosition = chunkPos;
 
             await Task.Run(() =>
@@ -88,7 +89,7 @@ namespace MC
         public BlockType GetLocalBlockType(Vector3I blockLocalPos)
         {
             if (World.IsBlockOutOfBound(blockLocalPos))
-                return BlockType.Air;
+                return BlockType.Stone;
 
             return _blockTypeArray[blockLocalPos.X, blockLocalPos.Y, blockLocalPos.Z];
         }

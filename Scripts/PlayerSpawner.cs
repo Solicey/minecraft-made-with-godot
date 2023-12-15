@@ -7,12 +7,10 @@ namespace MC
     {
         [Export] PackedScene _playerScene;
 
-        const string _playerGroup = "player_group";
-
         public override void _Ready()
         {
             SpawnFunction = new Callable(this, nameof(SpawnPlayerFunction));
-            AddToGroup(_playerGroup);
+            AddToGroup(Global.PlayerGroupName);
         }
 
         Node SpawnPlayerFunction(Variant data)

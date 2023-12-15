@@ -1,10 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://cgnp7juxesnfe"]
+[gd_scene load_steps=5 format=3 uid="uid://cgnp7juxesnfe"]
 
 [ext_resource type="Script" path="res://Scripts/Player.cs" id="1_p3810"]
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_45dqb"]
+[sub_resource type="BoxMesh" id="BoxMesh_opwo0"]
+size = Vector3(0.45, 0.45, 0.45)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rfpb4"]
 radius = 0.4
-height = 1.85
+height = 1.8
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pdxt8"]
 properties/0/path = NodePath(".:NameTag")
@@ -17,13 +20,19 @@ properties/2/path = NodePath(".:rotation")
 properties/2/spawn = true
 properties/2/replication_mode = 1
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_camera", "_rayCast")]
+[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_camera", "_rayCast", "_head", "_selectionBox")]
+collision_layer = 2
 script = ExtResource("1_p3810")
 _camera = NodePath("Head/Camera3D")
 _rayCast = NodePath("Head/Camera3D/RayCast3D")
+_head = NodePath("Head")
+_selectionBox = NodePath("SelectionBox")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_opwo0")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("CapsuleShape3D_45dqb")
+shape = SubResource("CapsuleShape3D_rfpb4")
 
 [node name="Head" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
@@ -32,6 +41,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 
 [node name="RayCast3D" type="RayCast3D" parent="Head/Camera3D"]
 target_position = Vector3(0, 0, -4)
+
+[node name="SelectionBox" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.008, 0, 0, 0, 1.008, 0, 0, 0, 1.008, 0, 0, 0)
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_pdxt8")

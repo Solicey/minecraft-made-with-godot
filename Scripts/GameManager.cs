@@ -18,21 +18,21 @@ namespace MC
         [Export] Server _server;
         [Export] Client _client;
         [Export] World _world;
-        GameVariables _variables;
+        Global _global;
 
         public override void _Ready()
         {
             _uiManager.HostGame += OnHostGame;
             _uiManager.JoinGame += OnJoinGame;
 
-            _variables = GetNode<GameVariables>("/root/GameVariables");
+            _global = GetNode<Global>("/root/Global");
 
             GD.Randomize();
         }
 
         async void OnHostGame(GameStartInfo info)
         {
-            _variables.GameStartInfo = info;
+            _global.GameStartInfo = info;
 
             GD.Print("On host game!");
             if (!_server.CreateServer(info.Port))
@@ -44,14 +44,12 @@ namespace MC
             if (!await _world.Create())
                 return;
 
-            // GD.Print("Reach here!");
-
-            _uiManager.Visible = false;
+            _global.LocalPlayer?.Init();
         }
 
         async void OnJoinGame(GameStartInfo info)
         {
-            _variables.GameStartInfo = info;
+            _global.GameStartInfo = info;
 
             GD.Print("On join game!");
 
@@ -63,8 +61,7 @@ namespace MC
                 return;
             }
 
-            _variables.ClientLatestState = ClientState.WorldCreated;
-            _uiManager.Visible = false;
+            _global.LocalPlayer?.Init();
         }
 
     }

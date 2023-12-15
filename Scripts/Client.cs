@@ -16,13 +16,23 @@ namespace MC
         Disconnected,
         PlayerSynced_SyncingWorldSeed,
         WorldSeedSynced_CreatingWorld,
-        WorldCreated,
-        InGame
     }
 
     public partial class Client : Node
     {
-        GameVariables _variables;
+        [Signal] public delegate void ClientLatestStateChangedEventHandler(int state);
+        public ClientState ClientLatestState
+        {
+            get { return _clientLatestState; }
+            private set
+            {
+                _clientLatestState = value;
+                EmitSignal(SignalName.ClientLatestStateChanged, (int)_clientLatestState);
+            }
+        }
+        ClientState _clientLatestState;
+
+        Global _global;
         RPCFunctions _rpcFunctions;
         SceneMultiplayer _multiplayer;
         ENetMultiplayerPeer _peer; 
@@ -37,28 +47,28 @@ namespace MC
 
         public override void _Ready()
         {
-            _variables = GetNode<GameVariables>("/root/GameVariables");
+            _global = GetNode<Global>("/root/Global");
             _rpcFunctions = GetNode<RPCFunctions>("/root/RpcFunctions");
 
             AddChild(_timeOutTimer);
             _timeOutTimer.OneShot = true;
             _timeOutTimer.Timeout += () =>
             {
-                if (_variables.ClientLatestState == ClientState.Connecting) 
-                    _variables.ClientLatestState = ClientState.TimeOut;
+                if (ClientLatestState == ClientState.Connecting) 
+                    ClientLatestState = ClientState.TimeOut;
             };
 
-            _variables.LocalPlayerSet += () =>
+            _global.LocalPlayerSet += () =>
             {
-                if (_variables.ClientLatestState == ClientState.Connected)
-                    _variables.ClientLatestState = ClientState.PlayerSynced_SyncingWorldSeed;
+                if (ClientLatestState == ClientState.Connected)
+                    ClientLatestState = ClientState.PlayerSynced_SyncingWorldSeed;
             };
 
-            _variables.SeedSet += (uint seed) =>
+            _global.SeedSet += (uint seed) =>
             {
                 GD.Print("Seed set!");
-                if (_variables.ClientLatestState == ClientState.PlayerSynced_SyncingWorldSeed)
-                    _variables.ClientLatestState = ClientState.WorldSeedSynced_CreatingWorld;
+                if (ClientLatestState == ClientState.PlayerSynced_SyncingWorldSeed)
+                    ClientLatestState = ClientState.WorldSeedSynced_CreatingWorld;
             };
             
         }
@@ -67,7 +77,7 @@ namespace MC
         {
             Reset();
 
-            _variables.ClientLatestState = ClientState.Connecting;
+            ClientLatestState = ClientState.Connecting;
 
             _multiplayer = new(); 
             _multiplayer.AuthCallback = new Callable(this, nameof(OnAuthReceived));
@@ -85,7 +95,7 @@ namespace MC
             if (error != Error.Ok)
             {
                 GD.PrintErr($"Create client failed: {error}");
-                _variables.ClientLatestState = ClientState.CanNotCreate;
+                ClientLatestState = ClientState.CanNotCreate;
                 return false;
             }
 
@@ -98,7 +108,7 @@ namespace MC
 
         public async Task<bool> SyncSeed()
         {
-            _rpcFunctions.RpcId(GameVariables.ServerId, nameof(SyncSeed), Multiplayer.GetUniqueId(), 0);
+            _rpcFunctions.RpcId(Global.ServerId, nameof(SyncSeed), Multiplayer.GetUniqueId(), 0);
 
             return await WaitForNewClientState(ClientState.WorldSeedSynced_CreatingWorld);
         }
@@ -106,7 +116,7 @@ namespace MC
         public async Task<bool> WaitForNewClientState(ClientState targetState)
         {
             //GD.Print($"Wait for client state: {targetState}");
-            if (_variables.ClientLatestState == targetState)
+            if (ClientLatestState == targetState)
             {
                 //GD.Print("Wait for client state: return immediately");
                 return true;
@@ -114,27 +124,27 @@ namespace MC
             else
             {
                 //GD.Print("Wait for client state: have to wait");
-                await ToSignal(_variables, GameVariables.SignalName.ClientLatestStateChanged);
+                await ToSignal(this, SignalName.ClientLatestStateChanged);
             }
             //GD.Print("Wait for client state: end waiting");
-            return _variables.ClientLatestState == targetState;
+            return ClientLatestState == targetState;
         }
 
         void OnConnectedToServer()
         {
             GD.Print($"Connected to server!");
-            _variables.ClientLatestState = ClientState.Connected;
+            ClientLatestState = ClientState.Connected;
         }
 
         void OnServerDisconnected()
         {
             GD.Print($"Disconnected from server!");
-            _variables.ClientLatestState = ClientState.Disconnected;
+            ClientLatestState = ClientState.Disconnected;
         }
 
         void OnPeerAuthenticating(long id)
         {
-            var error = _multiplayer.SendAuth((int)id, GameVariables.AuthData);
+            var error = _multiplayer.SendAuth((int)id, Global.AuthData);
             if (error != Error.Ok)
             {
                 GD.PrintErr($"Send auth failed: {error}");
@@ -143,7 +153,7 @@ namespace MC
 
         void OnAuthReceived(int id, byte[] data)
         {
-            if (!GameVariables.AuthData.SequenceEqual(data))
+            if (!Global.AuthData.SequenceEqual(data))
             {
                 GD.PrintErr($"Auth not match!");
                 return;
@@ -154,6 +164,7 @@ namespace MC
 
         void Reset()
         {
+            _multiplayer?.DisconnectPeer(Global.ServerId);
             if (_peer != null)
             {
                 _peer.Host?.Destroy();
@@ -161,7 +172,7 @@ namespace MC
             }
             _multiplayer = null;
 
-            _variables.ClientLatestState = ClientState.Closed;
+            ClientLatestState = ClientState.Closed;
         }
     }
 }

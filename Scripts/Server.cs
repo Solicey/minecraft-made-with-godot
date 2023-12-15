@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 using System;
 using System.Linq;
 
@@ -13,13 +14,15 @@ namespace MC
     {
         [Export] MultiplayerSpawner _multiplayerSpawner;
 
-        GameVariables _variables;
+        Global _global;
         SceneMultiplayer _multiplayer;
         ENetMultiplayerPeer _peer;
 
+        Dictionary<int, Node> _playerDict = new();
+
         public override void _Ready()
         {
-            _variables = GetNode<GameVariables>("/root/GameVariables");
+            _global = GetNode<Global>("/root/Global");
         }
 
         public bool CreateServer(int port)
@@ -47,7 +50,7 @@ namespace MC
 
             GD.Print($"Create server on port {port}!");
 
-            _multiplayerSpawner.Spawn(GameVariables.ServerId);
+            _multiplayerSpawner.Spawn(Global.ServerId);
 
             return true;
         }
@@ -60,22 +63,28 @@ namespace MC
                 _peer = null;
             }
             _multiplayer = null;
+            _playerDict.Clear();
         }
 
         void OnPeerConnected(long id)
         {
             GD.Print($"{id} connected to server!");
-            _multiplayerSpawner.Spawn(id);
+            _playerDict[(int)id] = _multiplayerSpawner.Spawn(id);
         }
 
         void OnPeerDisconnected(long id)
         {
             GD.Print($"{id} disconnected!");
+            if (_playerDict.TryGetValue((int)id, out var player))
+            {
+                _playerDict.Remove((int)id);
+                player.QueueFree();
+            }
         }
 
         void OnPeerAuthenticating(long id)
         {
-            var error = _multiplayer.SendAuth((int)id, GameVariables.AuthData);
+            var error = _multiplayer.SendAuth((int)id, Global.AuthData);
             if (error != Error.Ok)
             {
                 GD.PrintErr($"Send auth failed: {error}");
@@ -89,7 +98,7 @@ namespace MC
 
         void OnAuthReceived(int id, byte[] data)
         {
-            if (!GameVariables.AuthData.SequenceEqual(data))
+            if (!Global.AuthData.SequenceEqual(data))
             {
                 GD.PrintErr($"Auth not match!");
                 return;

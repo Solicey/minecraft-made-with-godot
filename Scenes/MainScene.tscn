@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bhlb362fkean6"]
+[gd_scene load_steps=8 format=3 uid="uid://bhlb362fkean6"]
 
 [ext_resource type="Script" path="res://Scripts/Server.cs" id="1_hr3xd"]
 [ext_resource type="Script" path="res://Scripts/PlayerSpawner.cs" id="1_ivhcq"]
@@ -8,15 +8,6 @@
 [ext_resource type="Script" path="res://Scripts/Client.cs" id="5_bqqkk"]
 [ext_resource type="PackedScene" uid="uid://cgnp7juxesnfe" path="res://Scenes/Player.tscn" id="5_ck88u"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_k7hjp"]
-
-[sub_resource type="Sky" id="Sky_3gnet"]
-sky_material = SubResource("ProceduralSkyMaterial_k7hjp")
-
-[sub_resource type="Environment" id="Environment_vyoox"]
-background_mode = 2
-sky = SubResource("Sky_3gnet")
-
 [node name="MainScene" type="Node" node_paths=PackedStringArray("_uiManager", "_server", "_client", "_world")]
 script = ExtResource("1_veq1b")
 _uiManager = NodePath("UIManager")
@@ -25,11 +16,6 @@ _client = NodePath("Client")
 _world = NodePath("World")
 
 [node name="World" parent="." instance=ExtResource("3_ka0dc")]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="World"]
-environment = SubResource("Environment_vyoox")
-
-[node name="UIManager" parent="." instance=ExtResource("4_63hx3")]
 
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
 spawn_path = NodePath("..")
@@ -42,3 +28,6 @@ _multiplayerSpawner = NodePath("../MultiplayerSpawner")
 
 [node name="Client" type="Node" parent="."]
 script = ExtResource("5_bqqkk")
+
+[node name="UIManager" parent="." node_paths=PackedStringArray("_client") instance=ExtResource("4_63hx3")]
+_client = NodePath("../Client")

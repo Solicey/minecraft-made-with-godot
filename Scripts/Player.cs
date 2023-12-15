@@ -1,52 +1,254 @@
 using Godot;
 using System;
+using static Godot.TextServer;
 
 namespace MC
 {
+    public enum PlayerState
+    {
+        Dummy,
+        Active,
+        Paused
+    }
+
+    public class RayCastHitBlockInfo
+    {
+        public Vector3I BlockWorldPos { get; set; }
+        public Vector3 HitFaceNormal { get; set; }
+    }
+
     public partial class Player : CharacterBody3D
     {
+        [Signal] public delegate void LocalPlayerStateChangedEventHandler(int state);
+
+        [Signal] public delegate void LocalPlayerMoveToNewChunkEventHandler(Vector2I newChunkPos);
+
+        public PlayerState LocalPlayerState
+        {
+            get { return _localPlayerState; }
+            private set
+            {
+                _localPlayerState = value;
+                EmitSignal(SignalName.LocalPlayerStateChanged, (int)_localPlayerState);
+            }
+        }
+        PlayerState _localPlayerState = PlayerState.Dummy;
+
         [Export] public int Id { get; set; }
         [Export] public string NameTag { get; set; }
 
-        GameVariables _variables;
+        Global _global;
 
         [Export] Camera3D _camera;
         [Export] RayCast3D _rayCast;
+        [Export] Node3D _head;
+        [Export] MeshInstance3D _selectionBox;
 
+        [Export] float _speed = 4f;
+        [Export] float _acceleration = 100f;
+        [Export] float _jumpHeight = 1f;
+        [Export] float _camSensitivity = 0.01f;
+
+        [Export] float _checkChunkInterval = 0.3f;
+        Vector2I _lastTimeChunkPos = new();
+
+        bool _jumping = false;
+        Vector2 _moveDirection = new();
+        Vector2 _lookDirection = new();
+
+        Vector3 _walkVelocity = new();
+        Vector3 _gravityVelocity = new();
+        Vector3 _jumpVelocity = new();
+
+        RayCastHitBlockInfo _rayCastInfo = new();
 
         public override void _Ready()
+        {
+            _camera.ClearCurrent();
+
+            if (!IsMultiplayerAuthority())
+                return;
+
+            _global = GetNode<Global>("/root/Global");
+            _global.LocalPlayer = this;  // Should send signal
+
+            LocalPlayerStateChanged += OnLocalPlayerStateChanged;
+            LocalPlayerState = PlayerState.Dummy;
+        }
+
+        public void Init()
         {
             if (!IsMultiplayerAuthority())
                 return;
 
+            GD.Print("Init local player!");
+
             _camera.Visible = true;
+            _camera.MakeCurrent();
 
-            _variables = GetNode<GameVariables>("/root/GameVariables");
-            
-            NameTag = _variables.GameStartInfo.PlayerName;
+            NameTag = _global.GameStartInfo.PlayerName;
+            Position = Global.PlayerSpawnPosition;
 
-            _variables.LocalPlayer = this;  // Should send signal
+            LocalPlayerState = PlayerState.Active;
 
-            Position = GameVariables.PlayerSpawnPosition;
+            // Check player current chunk
+            InitCheckChunkTimer();
+
+            // Generate selection box
+            GenerateSelectionBoxMesh();
+        }
+
+        public override void _Process(double delta)
+        {
+            if (!IsMultiplayerAuthority() || LocalPlayerState == PlayerState.Dummy)
+                return;
+
+            _selectionBox.Visible = false;
+
+            if (_rayCast.IsColliding())
+            {
+                var collider = _rayCast.GetCollider();
+
+                if (collider is Chunk chunk)
+                {
+                    var worldPos = (_rayCast.GetCollisionPoint() - 0.5f * _rayCast.GetCollisionNormal());
+                    var blockWorldPos = World.WorldPosToBlockWorldPos(worldPos);
+                    _selectionBox.GlobalPosition = blockWorldPos - (_selectionBox.Scale - Vector3.One) / 2f;
+
+                    _selectionBox.Visible = true;
+
+                    _rayCastInfo.BlockWorldPos = blockWorldPos;
+                    
+                }
+            }
         }
 
         public override void _PhysicsProcess(double delta)
         {
-            if (!IsMultiplayerAuthority())
+            if (!IsMultiplayerAuthority() || LocalPlayerState == PlayerState.Dummy)
                 return;
 
-            ProcessInput(delta);
-            ProcessMovement(delta);
+            Velocity = Walk((float)delta) + Gravity((float)delta) + Jump((float)delta);
+            MoveAndSlide();
         }
 
-        void ProcessInput(double delta)
+        public override void _Input(InputEvent @event)
         {
+            if (!IsMultiplayerAuthority() || LocalPlayerState == PlayerState.Dummy)
+                return;
 
+            _jumping = false;
+            _moveDirection = Vector2.Zero;
+
+            if (Input.IsActionJustPressed("Escape"))
+            {
+                if (LocalPlayerState == PlayerState.Active)
+                    LocalPlayerState = PlayerState.Paused;
+                else if (LocalPlayerState == PlayerState.Paused)
+                    LocalPlayerState = PlayerState.Active;
+            }
+            
+            if (LocalPlayerState != PlayerState.Active)
+                return;
+
+            if (@event is InputEventMouseMotion mouseMotion)
+            {
+                _lookDirection = mouseMotion.Relative * _camSensitivity;
+                var headRotation = _head.Rotation;
+                headRotation.Y -= _lookDirection.X;
+                headRotation.X = Mathf.Clamp(headRotation.X - _lookDirection.Y, -1.5f, 1.5f);
+                _head.Rotation = headRotation;
+            }
+
+            if (Input.IsActionPressed("Jump"))
+                _jumping = true;
+            _moveDirection = Input.GetVector("Left", "Right", "Forward", "Back");
         }
 
-        void ProcessMovement(double delta)
+        void InitCheckChunkTimer()
         {
+            var timer = new Timer();
+            AddChild(timer);
+            timer.Timeout += OnCheckChunkTimerTimeout;
+            _lastTimeChunkPos = World.WorldPosToChunkPos(Position);
+            timer.Start(_checkChunkInterval);
+        }
 
+        void OnCheckChunkTimerTimeout()
+        {
+            var chunkPos = World.WorldPosToChunkPos(Position);
+            if (chunkPos != _lastTimeChunkPos)
+            {
+                _lastTimeChunkPos = chunkPos;
+                EmitSignal(SignalName.LocalPlayerMoveToNewChunk, chunkPos);
+            }
+        }
+
+        void OnLocalPlayerStateChanged(int state)
+        {
+            var playerState = (PlayerState)state;
+            switch (playerState)
+            {
+                case PlayerState.Active:
+                    Input.MouseMode = Input.MouseModeEnum.Captured;
+                    break;
+                default:
+                    Input.MouseMode = Input.MouseModeEnum.Visible;
+                    break;
+            }
+        }
+
+        Vector3 Walk(float delta)
+        {
+            var forward = _head.GlobalTransform.Basis * new Vector3(_moveDirection.X, 0, _moveDirection.Y);
+            var walkDirection = new Vector3(forward.X, 0, forward.Z).Normalized();
+            _walkVelocity = _walkVelocity.MoveToward(walkDirection * _speed * _moveDirection.Length(), _acceleration * delta);
+            return _walkVelocity;
+        }
+
+        Vector3 Gravity(float delta)
+        {
+            _gravityVelocity = IsOnFloor() ? Vector3.Zero : _gravityVelocity.MoveToward(new Vector3(0, Velocity.Y - Global.Gravity, 0), Global.Gravity * delta);
+            return _gravityVelocity;
+        }
+
+        Vector3 Jump(float delta)
+        {
+            if (_jumping && IsOnFloor())
+                _jumpVelocity = new Vector3(0, Mathf.Sqrt(4 * _jumpHeight * Global.Gravity), 0);
+            else
+                _jumpVelocity = IsOnFloor() ? Vector3.Zero : _jumpVelocity.MoveToward(Vector3.Zero, Global.Gravity * delta);
+            return _jumpVelocity;
+        }
+
+        void GenerateSelectionBoxMesh()
+        {
+            var surfaceTool = new SurfaceTool();
+            var material = new OrmMaterial3D();
+
+            var indices = new int[]
+            {
+                0, 1, 0, 4, 1, 5, 4, 5,
+                0, 2, 1, 3, 4, 6, 5, 7,
+                2, 3, 2, 6, 3, 7, 6, 7
+            };
+
+            surfaceTool.Begin(Mesh.PrimitiveType.Lines);
+
+            for (int i = 0; i < Cubic.Vertices.Length; i++)
+                surfaceTool.AddVertex(Cubic.Vertices[i]);
+            for (int i = 0; i < indices.Length; i++)
+                surfaceTool.AddIndex(indices[i]);
+
+            material.ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded;
+            material.AlbedoColor = new Color(0.2f, 0.2f, 0.2f);
+            surfaceTool.SetMaterial(material);
+
+            var mesh = surfaceTool.Commit();
+
+            _selectionBox.Mesh = mesh;
+            _selectionBox.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
+            _selectionBox.Visible = false;
         }
     }
 }

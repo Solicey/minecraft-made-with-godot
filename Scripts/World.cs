@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -12,36 +13,36 @@ namespace MC
 
     public partial class World : Node3D
     {
-        GameVariables _variables;
+        Global _global;
         BlockManager _blockManager;
 
         [Export] PackedScene _chunkScene;
-        List<Chunk> _chunks = new();
         Dictionary<Vector2I, Chunk> _chunkPosMap = new();
 
         List<Vector2I> _renderOrder = new();
 
         [Export] FastNoiseLite _fastNoiseLite;
 
+        bool _isUpdating = false;
+
         public override void _Ready()
         {
-            _variables = GetNode<GameVariables>("/root/GameVariables");
+            _global = GetNode<Global>("/root/Global");
             _blockManager = GetNode<BlockManager>("/root/BlockManager");
 
-            for (int i = 0; i < GameVariables.RenderChunkCount; i++)
-            {
-                var chunk = _chunkScene.Instantiate<Chunk>();
-                AddChild(chunk);
-                _chunks.Add(chunk);
-            }
-
-            _variables.SeedSet += (uint seed) =>
+            _global.SeedSet += (uint seed) =>
             {
                 GD.Print($"Noise seed set: {seed}");
                 _fastNoiseLite.Seed = (int)seed;
             };
 
-            var dis = GameVariables.RenderChunkDistance;
+            _global.LocalPlayerSet += () =>
+            {
+                _global.LocalPlayer.LocalPlayerMoveToNewChunk += OnLocalPlayerMoveToNewChunk;
+            };
+
+            // TODO: flexible render chunk distance
+            var dis = Global.RenderChunkDistance;
             for (int x = 0; x <= dis; x++)
             {
                 for (int y = 0; y <= dis; y++)
@@ -59,12 +60,17 @@ namespace MC
 
         public static Vector2I WorldPosToChunkPos(Vector3 worldPos)
         {
-            return new Vector2I(Mathf.FloorToInt(worldPos.X / GameVariables.ChunkShape.X), Mathf.FloorToInt(worldPos.Z / GameVariables.ChunkShape.Z));
+            return new Vector2I(Mathf.FloorToInt(worldPos.X / Global.ChunkShape.X), Mathf.FloorToInt(worldPos.Z / Global.ChunkShape.Z));
+        }
+
+        public static Vector3I WorldPosToBlockWorldPos(Vector3 worldPos)
+        {
+            return new Vector3I(Mathf.FloorToInt(worldPos.X), Mathf.FloorToInt(worldPos.Y), Mathf.FloorToInt(worldPos.Z));
         }
 
         public static Vector3I ChunkPosToChunkWorldPos(Vector2I chunkPos)
         {
-            return new Vector3I(chunkPos.X * GameVariables.ChunkShape.X, 0, chunkPos.Y * GameVariables.ChunkShape.Z);
+            return new Vector3I(chunkPos.X * Global.ChunkShape.X, 0, chunkPos.Y * Global.ChunkShape.Z);
         }
 
         public static Vector3I BlockWorldPosToBlockLocalPos(Vector3I worldPos)
@@ -74,22 +80,23 @@ namespace MC
 
         public static bool IsBlockOutOfBound(Vector3I blockLocalPos)
         {
-            return blockLocalPos.X < 0 || blockLocalPos.X >= GameVariables.ChunkShape.X ||
-                blockLocalPos.Y < 0 || blockLocalPos.Y >= GameVariables.ChunkShape.Y ||
-                blockLocalPos.Z < 0 || blockLocalPos.Z >= GameVariables.ChunkShape.Z;
+            return blockLocalPos.X < 0 || blockLocalPos.X >= Global.ChunkShape.X ||
+                blockLocalPos.Y < 0 || blockLocalPos.Y >= Global.ChunkShape.Y ||
+                blockLocalPos.Z < 0 || blockLocalPos.Z >= Global.ChunkShape.Z;
         }
 
         public async Task<bool> Create()
         {
-            var centerChunkPos = WorldPosToChunkPos(GameVariables.PlayerSpawnPosition);
+            var centerChunkPos = WorldPosToChunkPos(Global.PlayerSpawnPosition);
 
             _chunkPosMap.Clear();
 
             List<Task> tasks = new();
-            for (int i = 0; i < _chunks.Count; i++)
+            for (int i = 0; i < Global.RenderChunkCount; i++)
             {
                 var chunkPos = centerChunkPos + _renderOrder[i];
-                var chunk = _chunks[i];
+                var chunk = _chunkScene.Instantiate<Chunk>();
+                AddChild(chunk);
 
                 _chunkPosMap[chunkPos] = chunk;
                 var task = chunk.SyncData(chunkPos, GenerateSimpleTerrain);
@@ -98,7 +105,7 @@ namespace MC
             await Task.WhenAll(tasks);
 
             tasks.Clear();
-            for (int i = 0; i < _chunks.Count; i++)
+            for (int i = 0; i < Global.RenderChunkCount; i++)
             {
                 var chunkPos = centerChunkPos + _renderOrder[i];
                 var chunk = _chunkPosMap[chunkPos];
@@ -114,7 +121,7 @@ namespace MC
 
         void GenerateSimpleTerrain(Vector2I chunkPos, BlockType[,,] blockArray)
         {
-            var shape = GameVariables.ChunkShape;
+            var shape = Global.ChunkShape;
             var chunkWorldPos = chunkPos * new Vector2I(shape.X, shape.Z);
 
             for (int x = 0; x < shape.X; x++)
@@ -145,13 +152,77 @@ namespace MC
             var chunkPos = WorldPosToChunkPos(blockWorldPos);
             
             if (!_chunkPosMap.TryGetValue(chunkPos, out var chunk))
-                return BlockType.Air;
+                return BlockType.Stone;
 
             var blockLocalPos = BlockWorldPosToBlockLocalPos(blockWorldPos);
 
             return chunk.GetLocalBlockType(blockLocalPos);
         }
 
+        async void OnLocalPlayerMoveToNewChunk(Vector2I chunkPos)
+        {
+            await Update(chunkPos);
+        }
 
+        async Task<bool> Update(Vector2I centerChunkPos)
+        {
+            if (_isUpdating)
+                return false;
+
+            _isUpdating = true;
+
+            List<Vector2I> newChunkPositions = new();
+            Dictionary<Vector2I, Chunk> newChunkPosMap = new();
+            foreach (var delta in _renderOrder)
+            {
+                var chunkPos = centerChunkPos + delta;
+                if (_chunkPosMap.ContainsKey(chunkPos))
+                {
+                    newChunkPosMap[chunkPos] = _chunkPosMap[chunkPos];
+                    _chunkPosMap.Remove(chunkPos);
+                }
+                else
+                {
+                    newChunkPositions.Add(chunkPos);
+                }
+            }
+
+            List<Task> tasks = new();
+            int i = 0;
+            foreach (var chunk in _chunkPosMap.Values)
+            {
+                var newChunkPos = newChunkPositions[i++];
+                newChunkPosMap[newChunkPos] = chunk;
+
+                var task = chunk.SyncData(newChunkPos, GenerateSimpleTerrain);
+                tasks.Add(task);
+            }
+            await Task.WhenAll(tasks);
+
+            _chunkPosMap = newChunkPosMap;
+
+            tasks.Clear();
+            foreach (var delta in _renderOrder)
+            {
+                var chunkPos = centerChunkPos + delta;
+
+                if (newChunkPositions.Contains(chunkPos + Vector2I.Up) ||
+                    newChunkPositions.Contains(chunkPos + Vector2I.Down) ||
+                    newChunkPositions.Contains(chunkPos + Vector2I.Left) ||
+                    newChunkPositions.Contains(chunkPos + Vector2I.Right))
+                {
+                    var chunk = _chunkPosMap[chunkPos];
+                    var task = chunk.SyncMesh(GetBlockType);
+                    tasks.Add(task);
+                }
+            }
+            await Task.WhenAll(tasks);
+
+            _isUpdating = false;
+
+            GD.Print("World update done");
+
+            return true;
+        }
     }
 }

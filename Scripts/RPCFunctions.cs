@@ -5,11 +5,11 @@ namespace MC
 {
     public partial class RPCFunctions : Node
     {
-        GameVariables _variables;
+        Global _global;
 
         public override void _Ready()
         {
-            _variables = GetNode<GameVariables>("/root/GameVariables");
+            _global = GetNode<Global>("/root/Global");
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
@@ -17,13 +17,13 @@ namespace MC
         {
             if (Multiplayer.IsServer())
             {
-                GD.Print($"Send seed to client, seed: {_variables.Seed}");
-                RpcId(id, nameof(SyncSeed), id, _variables.Seed);
+                GD.Print($"Send seed to client, seed: {_global.Seed}");
+                RpcId(id, nameof(SyncSeed), id, _global.Seed);
             }
             else
             {
                 GD.Print($"Client receive seed: {seed}");
-                _variables.Seed = seed;     // Should emit signal
+                _global.Seed = seed;     // Should emit signal
             }
         }
     }

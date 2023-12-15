@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Scripts/UIManager.cs" id="1_3853v"]
 
-[node name="UIManager" type="Control" node_paths=PackedStringArray("_hostButton", "_joinButton", "_addressEntry", "_portEntry", "_nameEntry", "_seedEntry", "_gameLoadingPanel", "_loadingMessageLabel", "_returnToMenuButton")]
+[node name="UIManager" type="Control" node_paths=PackedStringArray("_mainMenuPanel", "_hostButton", "_joinButton", "_addressEntry", "_portEntry", "_nameEntry", "_seedEntry", "_gameLoadingPanel", "_loadingMessageLabel", "_returnToMenuButton")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,6 +10,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_3853v")
+_mainMenuPanel = NodePath("MainMenuPanel")
 _hostButton = NodePath("MainMenuPanel/HostButton")
 _joinButton = NodePath("MainMenuPanel/JoinButton")
 _addressEntry = NodePath("MainMenuPanel/AddressEntry")

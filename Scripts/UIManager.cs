@@ -9,6 +9,7 @@ namespace MC
 
         [Signal] public delegate void JoinGameEventHandler(GameStartInfo info);
 
+        [Export] Panel _mainMenuPanel;
         [Export] Button _hostButton;
         [Export] Button _joinButton;
         [Export] TextEdit _addressEntry;
@@ -20,7 +21,9 @@ namespace MC
         [Export] Label _loadingMessageLabel;
         [Export] Button _returnToMenuButton;
 
-        GameVariables _variables;
+        Global _global;
+
+        [Export] Client _client;
 
         const string _defaultAddress = "127.0.0.1";
         const string _defaultPort = "8848";
@@ -33,8 +36,16 @@ namespace MC
             _nameEntry.Text = _defaultName;
             _seedEntry.Text = GD.Randi().ToString();
 
-            _variables = GetNode<GameVariables>("/root/GameVariables");
-            _variables.ClientLatestStateChanged += OnClientLatestStateChanged;
+            _global = GetNode<Global>("/root/Global");
+
+            if (_client != null)
+                _client.ClientLatestStateChanged += OnClientLatestStateChanged;
+
+            _global.LocalPlayerSet += () =>
+            {
+                if (_global.LocalPlayer != null)
+                    _global.LocalPlayer.LocalPlayerStateChanged += OnLocalPlayerStateChanged;
+            };
         }
 
         public void OnHostButtonPressed()
@@ -77,15 +88,21 @@ namespace MC
 
         void OnClientLatestStateChanged(int state)
         {
-            //GD.Print($"Client connection state message: {state.Message}");
-            //_loadingMessageLabel.Text = state.Message;
-
             var clientState = (ClientState)state;
             GD.Print($"Client state: {clientState}");
-
-
         }
 
-        
+        void OnLocalPlayerStateChanged(int state)
+        {
+            var playerState = (PlayerState)state;
+            GD.Print($"Player state: {playerState}");
+
+            switch (playerState)
+            {
+                case PlayerState.Active:
+                    _mainMenuPanel.Visible = false;
+                    break;
+            }
+        }
     }
 }
