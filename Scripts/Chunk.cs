@@ -30,6 +30,8 @@ namespace MC
 
         BlockType[,,] _blockTypeArray;
 
+
+
         SurfaceTool _surfaceTool = new();
 
         BlockManager _blockManager;

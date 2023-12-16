@@ -72,9 +72,6 @@ namespace MC
             NameTag = _global.GameStartInfo.PlayerName;
             Position = Global.PlayerSpawnPosition;
 
-            // Check player current chunk
-            InitCheckChunkTimer();
-
             // Generate selection box
             GenerateSelectionBoxMesh();
         }
@@ -83,6 +80,13 @@ namespace MC
         {
             if (!IsMultiplayerAuthority() || !InGame())
                 return;
+
+            var chunkPos = World.WorldPosToChunkPos(Position);
+            if (chunkPos != _lastTimeChunkPos)
+            {
+                _lastTimeChunkPos = chunkPos;
+                EmitSignal(SignalName.LocalPlayerMoveToNewChunk, chunkPos);
+            }
 
             _selectionBox.Visible = false;
 
@@ -153,25 +157,6 @@ namespace MC
         bool InGame()
         {
             return _global.GameState == GameState.InGameActive || _global.GameState == GameState.InGamePaused;
-        }
-
-        void InitCheckChunkTimer()
-        {
-            var timer = new Timer();
-            AddChild(timer);
-            timer.Timeout += OnCheckChunkTimerTimeout;
-            _lastTimeChunkPos = World.WorldPosToChunkPos(Position);
-            timer.Start(_checkChunkInterval);
-        }
-
-        void OnCheckChunkTimerTimeout()
-        {
-            var chunkPos = World.WorldPosToChunkPos(Position);
-            if (chunkPos != _lastTimeChunkPos)
-            {
-                _lastTimeChunkPos = chunkPos;
-                EmitSignal(SignalName.LocalPlayerMoveToNewChunk, chunkPos);
-            }
         }
 
         void OnGameStateChanged(int state)

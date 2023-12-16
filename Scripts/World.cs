@@ -21,7 +21,7 @@ namespace MC
 
         [Export] FastNoiseLite _fastNoiseLite;
 
-        [Export] float _chunkUpdateInterval = 0.15f;
+        [Export] float _chunkUpdateInterval = 0.3f;
         Vector2I _oldCenterChunkPos = new();
         Vector2I _newCenterChunkPos = new();
         Timer _chunkUpdateTimer = new();
@@ -50,6 +50,7 @@ namespace MC
 
             AddChild(_chunkUpdateTimer);
             _chunkUpdateTimer.Timeout += OnChunkUpdateTimerTimeout;
+            _chunkUpdateTimer.OneShot = true;
 
             // TODO: flexible render chunk distance
             var dis = Global.RenderChunkDistance;
@@ -178,58 +179,68 @@ namespace MC
             return chunk.GetLocalBlockType(blockLocalPos);
         }
 
-        async void OnLocalPlayerMoveToNewChunk(Vector2I chunkPos)
+        void OnLocalPlayerMoveToNewChunk(Vector2I chunkPos)
         {
-            await Update(chunkPos);
-            //_newCenterChunkPos = chunkPos;
+            _newCenterChunkPos = chunkPos;
         }
 
-        async Task<bool> Update(Vector2I centerChunkPos)
+        async Task<bool> Update(Vector2I centerChunkPos, bool isCenterChunkPosNew)
         {
             if (_isUpdating)
                 return false;
-
             _isUpdating = true;
 
-            List<Vector2I> newChunkPositions = new();
-            Dictionary<Vector2I, Chunk> newChunkPosMap = new();
-            foreach (var delta in _renderOrder)
+            List<Task> tasks = new();
+
+            if (isCenterChunkPosNew)
             {
-                var chunkPos = centerChunkPos + delta;
-                if (_chunkPosMap.ContainsKey(chunkPos))
+                List<Vector2I> chunkPositionsToUpdate = new();
+                Dictionary<Vector2I, Chunk> newChunkPosMap = new();
+                foreach (var delta in _renderOrder)
                 {
-                    newChunkPosMap[chunkPos] = _chunkPosMap[chunkPos];
-                    _chunkPosMap.Remove(chunkPos);
+                    var chunkPos = centerChunkPos + delta;
+                    if (_chunkPosMap.ContainsKey(chunkPos))
+                    {
+                        newChunkPosMap[chunkPos] = _chunkPosMap[chunkPos];
+                        _chunkPosMap.Remove(chunkPos);
+                    }
+                    else
+                    {
+                        chunkPositionsToUpdate.Add(chunkPos);
+                    }
                 }
-                else
+
+                int i = 0;
+                foreach (var chunk in _chunkPosMap.Values)
                 {
-                    newChunkPositions.Add(chunkPos);
+                    var newChunkPos = chunkPositionsToUpdate[i++];
+                    newChunkPosMap[newChunkPos] = chunk;
+
+                    var task = chunk.SyncData(newChunkPos, GenerateSimpleTerrain);
+                    tasks.Add(task);
                 }
+                await Task.WhenAll(tasks);
+
+                _chunkPosMap = newChunkPosMap;
             }
 
-            List<Task> tasks = new();
-            int i = 0;
+            var dirtyChunkPositions = new HashSet<Vector2I>();
             foreach (var chunk in _chunkPosMap.Values)
             {
-                var newChunkPos = newChunkPositions[i++];
-                newChunkPosMap[newChunkPos] = chunk;
-
-                var task = chunk.SyncData(newChunkPos, GenerateSimpleTerrain);
-                tasks.Add(task);
+                if (chunk.IsDirty)
+                    dirtyChunkPositions.Add(chunk.ChunkPosition);
             }
-            await Task.WhenAll(tasks);
-
-            _chunkPosMap = newChunkPosMap;
-
+            
             tasks.Clear();
             foreach (var delta in _renderOrder)
             {
                 var chunkPos = centerChunkPos + delta;
 
-                if (newChunkPositions.Contains(chunkPos + Vector2I.Up) ||
-                    newChunkPositions.Contains(chunkPos + Vector2I.Down) ||
-                    newChunkPositions.Contains(chunkPos + Vector2I.Left) ||
-                    newChunkPositions.Contains(chunkPos + Vector2I.Right))
+                if (dirtyChunkPositions.Contains(chunkPos) ||
+                    dirtyChunkPositions.Contains(chunkPos + Vector2I.Up) ||
+                    dirtyChunkPositions.Contains(chunkPos + Vector2I.Down) ||
+                    dirtyChunkPositions.Contains(chunkPos + Vector2I.Left) ||
+                    dirtyChunkPositions.Contains(chunkPos + Vector2I.Right))
                 {
                     var chunk = _chunkPosMap[chunkPos];
                     var task = chunk.SyncMesh(GetBlockType);
@@ -245,12 +256,32 @@ namespace MC
             return true;
         }
 
-        void OnChunkUpdateTimerTimeout()
+        async void OnChunkUpdateTimerTimeout()
         {
             if (!_hasInit)
                 return;
 
+            if (_oldCenterChunkPos != _newCenterChunkPos)
+            {
+                _oldCenterChunkPos = _newCenterChunkPos;
+                await Update(_newCenterChunkPos, true);
+            }
+            else
+            {
+                bool hasDirtyChunks = false;
+                foreach (var chunk in _chunkPosMap.Values)
+                {
+                    if (chunk.IsDirty)
+                    {
+                        hasDirtyChunks = true;
+                        break;
+                    }
+                }
+                if (hasDirtyChunks)
+                    await Update(_newCenterChunkPos, false);
+            }
 
+            _chunkUpdateTimer.Start(_chunkUpdateInterval);
         }
     }
 }
