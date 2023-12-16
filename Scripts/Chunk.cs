@@ -20,6 +20,8 @@ namespace MC
         }
         Vector2I _chunkPosition;
 
+        public bool IsDirty { get; private set; } = false;
+
         Vector3I _shape;
 
         [Export] CollisionShape3D _collisionShape;
@@ -49,6 +51,8 @@ namespace MC
             {
                 generator(chunkPos, _blockTypeArray);
             });
+
+            IsDirty = true;
         }
 
         public async Task SyncMesh(BlockTypeGetter typeGetter)
@@ -84,6 +88,7 @@ namespace MC
             _meshInstance.Mesh = mesh;
             _collisionShape.Shape = mesh.CreateTrimeshShape();
 
+            IsDirty = false;
         }
 
         public BlockType GetLocalBlockType(Vector3I blockLocalPos)

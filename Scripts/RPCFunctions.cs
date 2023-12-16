@@ -34,7 +34,7 @@ namespace MC
         {
             if (Multiplayer.IsServer())
             {
-
+                GD.Print("Receive!");
             }
         }
     }

@@ -37,10 +37,7 @@ namespace MC
                     _global.GameState = GameState.ClientTimeout;
             };
 
-            _global.LocalPlayerSet += () =>
-            {
-                _global.LocalPlayer.LocalPlayerBreakBlock += OnLocalPlayerBreakBlock;
-            };
+            _global.GameStateChanged += OnGameStateChanged;
 
             AddChild(_breakBlockTimer);
             _breakBlockTimer.OneShot = true;
@@ -81,7 +78,7 @@ namespace MC
 
         public bool SyncSeed()
         {
-            return _rpcFunctions.RpcId(Global.ServerId, nameof(SyncSeed), Multiplayer.GetUniqueId(), 0) == Error.Ok;
+            return _rpcFunctions.RpcId(Global.ServerId, nameof(_rpcFunctions.SyncSeed), Multiplayer.GetUniqueId(), 0) == Error.Ok;
         }
 
         void OnConnectedToServer()
@@ -132,9 +129,22 @@ namespace MC
             if (_breakBlockTimer.TimeLeft > 0)
                 return;
 
-            RpcId(Global.ServerId, nameof(_rpcFunctions.SendBreakBlockRequest), _multiplayer.GetUniqueId(), info.BlockWorldPos, info.HitFaceNormal);    
+            GD.Print(info.BlockWorldPos);
+            _rpcFunctions.RpcId(Global.ServerId, nameof(_rpcFunctions.SendBreakBlockRequest), Multiplayer.GetUniqueId(), info.BlockWorldPos, info.HitFaceNormal);    
 
             _breakBlockTimer.Start(_breakBlockInterval); 
+        }
+
+        void OnGameStateChanged(int state)
+        {
+            GameState gameState = (GameState)state;
+            switch (gameState)
+            {
+                case GameState.ClientPlayerSynced_SyncingWorldSeed:
+                    if (_global.LocalPlayer != null)
+                        _global.LocalPlayer.LocalPlayerBreakBlock += OnLocalPlayerBreakBlock;
+                    break;
+            }
         }
     }
 }
