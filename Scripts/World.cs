@@ -1,8 +1,5 @@
 using Godot;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace MC
@@ -15,6 +12,7 @@ namespace MC
     {
         Global _global;
         BlockManager _blockManager;
+        RPCFunctions _rpcFunctions;
 
         [Export] PackedScene _chunkScene;
         Dictionary<Vector2I, Chunk> _chunkPosMap = new();
@@ -23,12 +21,21 @@ namespace MC
 
         [Export] FastNoiseLite _fastNoiseLite;
 
+        [Export] float _chunkUpdateInterval = 0.15f;
+        Vector2I _oldCenterChunkPos = new();
+        Vector2I _newCenterChunkPos = new();
+        Timer _chunkUpdateTimer = new();
+
+        bool _hasInit = false;
         bool _isUpdating = false;
+
+        [Signal] public delegate void UpdateChunkDoneEventHandler();
 
         public override void _Ready()
         {
             _global = GetNode<Global>("/root/Global");
             _blockManager = GetNode<BlockManager>("/root/BlockManager");
+            _rpcFunctions = GetNode<RPCFunctions>("/root/RpcFunctions");
 
             _global.SeedSet += (uint seed) =>
             {
@@ -40,6 +47,9 @@ namespace MC
             {
                 _global.LocalPlayer.LocalPlayerMoveToNewChunk += OnLocalPlayerMoveToNewChunk;
             };
+
+            AddChild(_chunkUpdateTimer);
+            _chunkUpdateTimer.Timeout += OnChunkUpdateTimerTimeout;
 
             // TODO: flexible render chunk distance
             var dis = Global.RenderChunkDistance;
@@ -85,8 +95,14 @@ namespace MC
                 blockLocalPos.Z < 0 || blockLocalPos.Z >= Global.ChunkShape.Z;
         }
 
-        public async Task<bool> Create()
+        public async Task<bool> Init()
         {
+            if (_isUpdating)
+                await ToSignal(this, SignalName.UpdateChunkDone);
+
+            _hasInit = false;
+            _chunkUpdateTimer.Stop();
+
             var centerChunkPos = WorldPosToChunkPos(Global.PlayerSpawnPosition);
 
             _chunkPosMap.Clear();
@@ -115,6 +131,9 @@ namespace MC
             await Task.WhenAll(tasks);
 
             GD.Print("World create done");
+
+            _hasInit = true;
+            _chunkUpdateTimer.Start(_chunkUpdateInterval);
 
             return true;
         }
@@ -150,7 +169,7 @@ namespace MC
         BlockType GetBlockType(Vector3I blockWorldPos)
         {
             var chunkPos = WorldPosToChunkPos(blockWorldPos);
-            
+
             if (!_chunkPosMap.TryGetValue(chunkPos, out var chunk))
                 return BlockType.Stone;
 
@@ -162,6 +181,7 @@ namespace MC
         async void OnLocalPlayerMoveToNewChunk(Vector2I chunkPos)
         {
             await Update(chunkPos);
+            //_newCenterChunkPos = chunkPos;
         }
 
         async Task<bool> Update(Vector2I centerChunkPos)
@@ -219,10 +239,18 @@ namespace MC
             await Task.WhenAll(tasks);
 
             _isUpdating = false;
-
+            EmitSignal(SignalName.UpdateChunkDone);
             GD.Print("World update done");
 
             return true;
+        }
+
+        void OnChunkUpdateTimerTimeout()
+        {
+            if (!_hasInit)
+                return;
+
+
         }
     }
 }

@@ -56,5 +56,30 @@ namespace MC
             }
         }
 
+        [Signal] public delegate void GameStateChangedEventHandler(int state);
+        public GameState GameState
+        {
+            get { return _gameState; }
+            set
+            {
+                _gameState = value;
+                EmitSignal(SignalName.GameStateChanged, (int)value);
+            }
+        }
+        GameState _gameState;
+
+        public async Task<bool> WaitForNewGameState(GameState targetState)
+        {
+            if (GameState == targetState)
+            {
+                return true;
+            }
+            else
+            {
+                await ToSignal(this, SignalName.GameStateChanged);
+            }
+            return GameState == targetState;
+        }
+
     }
 }

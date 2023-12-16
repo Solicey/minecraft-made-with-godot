@@ -4,14 +4,7 @@ using static Godot.TextServer;
 
 namespace MC
 {
-    public enum PlayerState
-    {
-        Dummy,
-        Active,
-        Paused
-    }
-
-    public class RayCastHitBlockInfo
+    public partial class RayCastHitBlockInfo : GodotObject
     {
         public Vector3I BlockWorldPos { get; set; }
         public Vector3 HitFaceNormal { get; set; }
@@ -23,16 +16,7 @@ namespace MC
 
         [Signal] public delegate void LocalPlayerMoveToNewChunkEventHandler(Vector2I newChunkPos);
 
-        public PlayerState LocalPlayerState
-        {
-            get { return _localPlayerState; }
-            private set
-            {
-                _localPlayerState = value;
-                EmitSignal(SignalName.LocalPlayerStateChanged, (int)_localPlayerState);
-            }
-        }
-        PlayerState _localPlayerState = PlayerState.Dummy;
+        [Signal] public delegate void LocalPlayerBreakBlockEventHandler(RayCastHitBlockInfo info);
 
         [Export] public int Id { get; set; }
         [Export] public string NameTag { get; set; }
@@ -72,8 +56,7 @@ namespace MC
             _global = GetNode<Global>("/root/Global");
             _global.LocalPlayer = this;  // Should send signal
 
-            LocalPlayerStateChanged += OnLocalPlayerStateChanged;
-            LocalPlayerState = PlayerState.Dummy;
+            _global.GameStateChanged += OnGameStateChanged;
         }
 
         public void Init()
@@ -89,8 +72,6 @@ namespace MC
             NameTag = _global.GameStartInfo.PlayerName;
             Position = Global.PlayerSpawnPosition;
 
-            LocalPlayerState = PlayerState.Active;
-
             // Check player current chunk
             InitCheckChunkTimer();
 
@@ -100,7 +81,7 @@ namespace MC
 
         public override void _Process(double delta)
         {
-            if (!IsMultiplayerAuthority() || LocalPlayerState == PlayerState.Dummy)
+            if (!IsMultiplayerAuthority() || !InGame())
                 return;
 
             _selectionBox.Visible = false;
@@ -111,21 +92,22 @@ namespace MC
 
                 if (collider is Chunk chunk)
                 {
-                    var worldPos = (_rayCast.GetCollisionPoint() - 0.5f * _rayCast.GetCollisionNormal());
+                    _rayCastInfo.HitFaceNormal = _rayCast.GetCollisionNormal();
+
+                    var worldPos = (_rayCast.GetCollisionPoint() - 0.5f * _rayCastInfo.HitFaceNormal);
                     var blockWorldPos = World.WorldPosToBlockWorldPos(worldPos);
                     _selectionBox.GlobalPosition = blockWorldPos - (_selectionBox.Scale - Vector3.One) / 2f;
 
                     _selectionBox.Visible = true;
 
                     _rayCastInfo.BlockWorldPos = blockWorldPos;
-                    
                 }
             }
         }
 
         public override void _PhysicsProcess(double delta)
         {
-            if (!IsMultiplayerAuthority() || LocalPlayerState == PlayerState.Dummy)
+            if (!IsMultiplayerAuthority() || !InGame())
                 return;
 
             Velocity = Walk((float)delta) + Gravity((float)delta) + Jump((float)delta);
@@ -134,7 +116,7 @@ namespace MC
 
         public override void _Input(InputEvent @event)
         {
-            if (!IsMultiplayerAuthority() || LocalPlayerState == PlayerState.Dummy)
+            if (!IsMultiplayerAuthority() || !InGame())
                 return;
 
             _jumping = false;
@@ -142,13 +124,13 @@ namespace MC
 
             if (Input.IsActionJustPressed("Escape"))
             {
-                if (LocalPlayerState == PlayerState.Active)
-                    LocalPlayerState = PlayerState.Paused;
-                else if (LocalPlayerState == PlayerState.Paused)
-                    LocalPlayerState = PlayerState.Active;
+                if (_global.GameState == GameState.InGameActive)
+                    _global.GameState = GameState.InGamePaused;
+                else if (_global.GameState == GameState.InGamePaused)
+                    _global.GameState = GameState.InGameActive;
             }
             
-            if (LocalPlayerState != PlayerState.Active)
+            if (_global.GameState != GameState.InGameActive)
                 return;
 
             if (@event is InputEventMouseMotion mouseMotion)
@@ -163,6 +145,14 @@ namespace MC
             if (Input.IsActionPressed("Jump"))
                 _jumping = true;
             _moveDirection = Input.GetVector("Left", "Right", "Forward", "Back");
+
+            if (Input.IsActionJustPressed("Break"))
+                EmitSignal(SignalName.LocalPlayerBreakBlock, _rayCastInfo);
+        }
+
+        bool InGame()
+        {
+            return _global.GameState == GameState.InGameActive || _global.GameState == GameState.InGamePaused;
         }
 
         void InitCheckChunkTimer()
@@ -184,15 +174,15 @@ namespace MC
             }
         }
 
-        void OnLocalPlayerStateChanged(int state)
+        void OnGameStateChanged(int state)
         {
-            var playerState = (PlayerState)state;
-            switch (playerState)
+            var gameState = (GameState)state;
+            switch (gameState)
             {
-                case PlayerState.Active:
+                case GameState.InGameActive:
                     Input.MouseMode = Input.MouseModeEnum.Captured;
                     break;
-                default:
+                case GameState.InGamePaused:
                     Input.MouseMode = Input.MouseModeEnum.Visible;
                     break;
             }

@@ -12,6 +12,21 @@ namespace MC
         public uint Seed { get; set; }
     }
 
+    public enum GameState
+    {
+        InMainMenu,
+        ClientConnecting,
+        ClientCantCreate,
+        ClientTimeout,
+        ClientDisconnected,
+        ClientConnected_SyncingPlayer,
+        ClientPlayerSynced_SyncingWorldSeed,
+        ClientInitingWorld,
+        InGameActive,
+        InGamePaused,
+
+    }
+
     public partial class GameManager : Node
     {
         [Export] UIManager _uiManager;
@@ -28,6 +43,19 @@ namespace MC
             _global = GetNode<Global>("/root/Global");
 
             GD.Randomize();
+
+            _global.LocalPlayerSet += () =>
+            {
+                if (_global.GameState == GameState.ClientConnected_SyncingPlayer)
+                    _global.GameState = GameState.ClientPlayerSynced_SyncingWorldSeed;
+            };
+
+            _global.SeedSet += (uint seed) =>
+            {
+                GD.Print("Seed set!");
+                if (_global.GameState == GameState.ClientPlayerSynced_SyncingWorldSeed)
+                    _global.GameState = GameState.ClientInitingWorld;
+            };
         }
 
         async void OnHostGame(GameStartInfo info)
@@ -41,10 +69,11 @@ namespace MC
                 return;
             }
 
-            if (!await _world.Create())
+            if (!await _world.Init())
                 return;
 
             _global.LocalPlayer?.Init();
+            _global.GameState = GameState.InGameActive;
         }
 
         async void OnJoinGame(GameStartInfo info)
@@ -54,14 +83,16 @@ namespace MC
             GD.Print("On join game!");
 
             if (!await _client.CreateClient(info.Address, info.Port) || 
-                !await _client.WaitForNewClientState(ClientState.PlayerSynced_SyncingWorldSeed) ||
-                !await _client.SyncSeed() ||
-                !await _world.Create())
+                !await _global.WaitForNewGameState(GameState.ClientPlayerSynced_SyncingWorldSeed) ||
+                !_client.SyncSeed() ||
+                !await _global.WaitForNewGameState(GameState.ClientInitingWorld) ||
+                !await _world.Init())
             {
                 return;
             }
 
             _global.LocalPlayer?.Init();
+            _global.GameState = GameState.InGameActive;
         }
 
     }

@@ -29,5 +29,4 @@ _multiplayerSpawner = NodePath("../MultiplayerSpawner")
 [node name="Client" type="Node" parent="."]
 script = ExtResource("5_bqqkk")
 
-[node name="UIManager" parent="." node_paths=PackedStringArray("_client") instance=ExtResource("4_63hx3")]
-_client = NodePath("../Client")
+[node name="UIManager" parent="." instance=ExtResource("4_63hx3")]

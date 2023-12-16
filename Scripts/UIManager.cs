@@ -23,8 +23,6 @@ namespace MC
 
         Global _global;
 
-        [Export] Client _client;
-
         const string _defaultAddress = "127.0.0.1";
         const string _defaultPort = "8848";
         const string _defaultName = "Steve";
@@ -38,14 +36,7 @@ namespace MC
 
             _global = GetNode<Global>("/root/Global");
 
-            if (_client != null)
-                _client.ClientLatestStateChanged += OnClientLatestStateChanged;
-
-            _global.LocalPlayerSet += () =>
-            {
-                if (_global.LocalPlayer != null)
-                    _global.LocalPlayer.LocalPlayerStateChanged += OnLocalPlayerStateChanged;
-            };
+            _global.GameStateChanged += OnGameStateChanged;
         }
 
         public void OnHostButtonPressed()
@@ -86,20 +77,14 @@ namespace MC
             return uint.TryParse(_seedEntry.Text, out var seed) ? seed : GD.Randi();
         }
 
-        void OnClientLatestStateChanged(int state)
+        void OnGameStateChanged(int state)
         {
-            var clientState = (ClientState)state;
-            GD.Print($"Client state: {clientState}");
-        }
+            var gameState = (GameState)state;
+            GD.Print($"Game state: {gameState}");
 
-        void OnLocalPlayerStateChanged(int state)
-        {
-            var playerState = (PlayerState)state;
-            GD.Print($"Player state: {playerState}");
-
-            switch (playerState)
+            switch (gameState)
             {
-                case PlayerState.Active:
+                case GameState.InGameActive:
                     _mainMenuPanel.Visible = false;
                     break;
             }

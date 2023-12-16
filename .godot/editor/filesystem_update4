@@ -1,16 +1,4 @@
 res://Scenes/MainScene.tscn
 res://Scenes/UiManager.tscn
-res://Scenes/World.tscn
 res://Scenes/Player.tscn
-res://Scripts/Block.cs
-res://Scripts/BlockManager.cs
-res://Scripts/Chunk.cs
-res://Scripts/Client.cs
-res://Scripts/GameManager.cs
-res://Scripts/Global.cs
-res://Scripts/Player.cs
-res://Scripts/PlayerSpawner.cs
-res://Scripts/RPCFunctions.cs
-res://Scripts/Server.cs
-res://Scripts/UIManager.cs
-res://Scripts/World.cs
+res://Scenes/World.tscn
