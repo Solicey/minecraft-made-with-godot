@@ -89,7 +89,7 @@ namespace MC
             return worldPos - ChunkPosToChunkWorldPos(WorldPosToChunkPos(worldPos));
         }
 
-        public static bool IsBlockOutOfBound(Vector3I blockLocalPos)
+        public static bool IsBlockLocalPosOutOfBound(Vector3I blockLocalPos)
         {
             return blockLocalPos.X < 0 || blockLocalPos.X >= Global.ChunkShape.X ||
                 blockLocalPos.Y < 0 || blockLocalPos.Y >= Global.ChunkShape.Y ||

@@ -6,7 +6,9 @@ namespace MC
 {
     public partial class RayCastHitBlockInfo : GodotObject
     {
-        public Vector3I BlockWorldPos { get; set; }
+        public bool IsColliding { get; set; } = false;
+        public Vector2I ChunkPos { get; set; }
+        public Vector3I BlockLocalPos { get; set; }
         public Vector3 HitFaceNormal { get; set; }
     }
 
@@ -89,6 +91,7 @@ namespace MC
             }
 
             _selectionBox.Visible = false;
+            _rayCastInfo.IsColliding = false;
 
             if (_rayCast.IsColliding())
             {
@@ -96,6 +99,7 @@ namespace MC
 
                 if (collider is Chunk chunk)
                 {
+                    _rayCastInfo.IsColliding = true;
                     _rayCastInfo.HitFaceNormal = _rayCast.GetCollisionNormal();
 
                     var worldPos = (_rayCast.GetCollisionPoint() - 0.5f * _rayCastInfo.HitFaceNormal);
@@ -103,8 +107,8 @@ namespace MC
                     _selectionBox.GlobalPosition = blockWorldPos - (_selectionBox.Scale - Vector3.One) / 2f;
 
                     _selectionBox.Visible = true;
-
-                    _rayCastInfo.BlockWorldPos = blockWorldPos;
+                    _rayCastInfo.ChunkPos = World.WorldPosToChunkPos(worldPos);
+                    _rayCastInfo.BlockLocalPos = World.BlockWorldPosToBlockLocalPos(blockWorldPos);
                 }
             }
         }
@@ -150,7 +154,7 @@ namespace MC
                 _jumping = true;
             _moveDirection = Input.GetVector("Left", "Right", "Forward", "Back");
 
-            if (Input.IsActionJustPressed("Break"))
+            if (Input.IsActionJustPressed("Break") && _rayCastInfo.IsColliding)
                 EmitSignal(SignalName.LocalPlayerBreakBlock, _rayCastInfo);
         }
 

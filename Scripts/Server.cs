@@ -5,11 +5,6 @@ using System.Linq;
 
 namespace MC
 {
-    public enum ServerState
-    {
-        
-    }
-
     public partial class Server : Node
     {
         [Export] MultiplayerSpawner _multiplayerSpawner;
@@ -17,17 +12,27 @@ namespace MC
         Global _global;
         SceneMultiplayer _multiplayer;
         ENetMultiplayerPeer _peer;
+        RPCFunctions _rpcFunctions;
 
         Dictionary<int, Node> _playerDict = new();
+
+        Dictionary<Vector2I, ChunkVariation> _chunkVariationDict = new();
 
         public override void _Ready()
         {
             _global = GetNode<Global>("/root/Global");
+            _rpcFunctions = GetNode<RPCFunctions>("/root/RpcFunctions");
+
+            _global.GameStateChanged += OnGameStateChanged;
+
+            _rpcFunctions.ReceivedBlockBreakRequest += OnReceivedBlockBreakRequest;
         }
 
         public bool CreateServer(int port)
         {
             Reset();
+
+            _global.GameState = GameState.ServerCreating;
 
             _multiplayer = new();
             _multiplayer.AuthCallback = new Callable(this, nameof(OnAuthReceived));
@@ -43,6 +48,7 @@ namespace MC
             if (error != Error.Ok)
             {
                 GD.PrintErr($"Create server failed: {error}");
+                _global.GameState = GameState.ServerCantCreate;
                 return false;
             }
 
@@ -50,6 +56,7 @@ namespace MC
 
             GD.Print($"Create server on port {port}!");
 
+            _global.GameState = GameState.ServerCreated_SyncingPlayer;
             _multiplayerSpawner.Spawn(Global.ServerId);
 
             return true;
@@ -105,6 +112,39 @@ namespace MC
             }
             GD.Print($"Receive auth from {id}!");
             _multiplayer.CompleteAuth(id);
+        }
+
+        void OnReceivedBlockBreakRequest(Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal)
+        {
+            if (World.IsBlockLocalPosOutOfBound(blockLocalPos))
+                return;
+
+            GD.Print($"Receive block break request! {chunkPos} {blockLocalPos}");
+
+            if (_chunkVariationDict.TryGetValue(chunkPos, out var chunkVariation))
+            {
+                chunkVariation.BlockTypeDict[blockLocalPos] = BlockType.Air;
+            }
+            else
+            {
+                chunkVariation = new ChunkVariation();
+                chunkVariation.BlockTypeDict[blockLocalPos] = BlockType.Air;
+                _chunkVariationDict.Add(chunkPos, chunkVariation);
+            }
+        }
+
+        void OnGameStateChanged(int state)
+        {
+            GameState gameState = (GameState)state;
+            switch (gameState)
+            {
+                case GameState.ServerPlayerSynced_InitingWorld:
+                    _global.LocalPlayer.LocalPlayerBreakBlock += (RayCastHitBlockInfo info) =>
+                    {
+                        OnReceivedBlockBreakRequest(info.ChunkPos, info.BlockLocalPos, info.HitFaceNormal);
+                    };
+                    break;
+            }
         }
     }
 

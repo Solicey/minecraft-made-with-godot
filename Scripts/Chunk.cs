@@ -1,9 +1,15 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MC
 {
+    public partial class ChunkVariation : GodotObject
+    {
+        public Dictionary<Vector3I, BlockType> BlockTypeDict = new();
+    }
+
     public partial class Chunk : StaticBody3D
     {
         public Vector2I ChunkPosition
@@ -30,7 +36,7 @@ namespace MC
 
         BlockType[,,] _blockTypeArray;
 
-
+        ChunkVariation _chunkVariation = new();
 
         SurfaceTool _surfaceTool = new();
 
@@ -95,7 +101,7 @@ namespace MC
 
         public BlockType GetLocalBlockType(Vector3I blockLocalPos)
         {
-            if (World.IsBlockOutOfBound(blockLocalPos))
+            if (World.IsBlockLocalPosOutOfBound(blockLocalPos))
                 return BlockType.Stone;
 
             return _blockTypeArray[blockLocalPos.X, blockLocalPos.Y, blockLocalPos.Z];

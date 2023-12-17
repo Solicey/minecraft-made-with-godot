@@ -7,7 +7,7 @@ namespace MC
     {
         Global _global;
 
-        [Signal] public delegate void ReceivedBlockBreakRequestEventHandler(Vector3I blockWorldPos, Vector3 hitPointNormal);
+        [Signal] public delegate void ReceivedBlockBreakRequestEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal);
 
         public override void _Ready()
         {
@@ -30,12 +30,17 @@ namespace MC
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
-        public void SendBreakBlockRequest(int id, Vector3I blockWorldPos, Vector3 hitPointNormal)
+        public void SendBreakBlockRequest(int id, Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal)
         {
             if (Multiplayer.IsServer())
             {
-                GD.Print("Receive!");
+                EmitSignal(SignalName.ReceivedBlockBreakRequest, chunkPos, blockLocalPos, hitFaceNormal);
             }
+        }
+
+        public void SyncBlockVariation()
+        {
+
         }
     }
 

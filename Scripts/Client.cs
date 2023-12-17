@@ -129,8 +129,7 @@ namespace MC
             if (_breakBlockTimer.TimeLeft > 0)
                 return;
 
-            GD.Print(info.BlockWorldPos);
-            _rpcFunctions.RpcId(Global.ServerId, nameof(_rpcFunctions.SendBreakBlockRequest), Multiplayer.GetUniqueId(), info.BlockWorldPos, info.HitFaceNormal);    
+            _rpcFunctions.RpcId(Global.ServerId, nameof(_rpcFunctions.SendBreakBlockRequest), Multiplayer.GetUniqueId(), info.ChunkPos, info.BlockLocalPos, info.HitFaceNormal);    
 
             _breakBlockTimer.Start(_breakBlockInterval); 
         }
