@@ -9,6 +9,10 @@ namespace MC
 
         [Signal] public delegate void ReceivedBlockBreakRequestEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal);
 
+        [Signal] public delegate void ReceivedBlockVariationEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, int blockType);
+
+        [Signal] public delegate void ReceivedSendSyncChunkRequestEventHandler(int id, Vector2I chunkPos);
+
         public override void _Ready()
         {
             _global = GetNode<Global>("/root/Global");
@@ -38,9 +42,19 @@ namespace MC
             }
         }
 
-        public void SyncBlockVariation()
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable, CallLocal = true)]
+        public void SyncBlockVariation(Vector2I chunkPos, Vector3I blockLocalPos, BlockType blockType)
         {
+            EmitSignal(SignalName.ReceivedBlockVariation, chunkPos, blockLocalPos, (int)blockType);
+        }
 
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable, CallLocal = true)]
+        public void SendSyncChunkRequest(int id, Vector2I chunkPos)
+        {
+            if (Multiplayer.IsServer())
+            {
+                EmitSignal(SignalName.ReceivedSendSyncChunkRequest, id, chunkPos);
+            }
         }
     }
 

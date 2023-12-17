@@ -36,11 +36,11 @@ namespace MC
 
         BlockType[,,] _blockTypeArray;
 
-        ChunkVariation _chunkVariation = new();
-
         SurfaceTool _surfaceTool = new();
 
         BlockManager _blockManager;
+
+        ChunkVariation _chunkVariation = new();
 
         public override void _Ready()
         {
@@ -55,10 +55,14 @@ namespace MC
             _meshInstance.Mesh = null;
             ChunkPosition = chunkPos;
 
-            await Task.Run(() =>
+            Task task = Task.Run(() =>
             {
                 generator(chunkPos, _blockTypeArray);
             });
+
+            
+
+            await task;
 
             IsDirty = true;
         }
@@ -105,6 +109,16 @@ namespace MC
                 return BlockType.Stone;
 
             return _blockTypeArray[blockLocalPos.X, blockLocalPos.Y, blockLocalPos.Z];
+        }
+
+        public void ApplyBlockVariation(Vector3I blockLocalPos, BlockType blockType)
+        {
+            if (World.IsBlockLocalPosOutOfBound(blockLocalPos))
+                return;
+
+            _blockTypeArray[blockLocalPos.X, blockLocalPos.Y, blockLocalPos.Z] = blockType;
+            
+            IsDirty = true;
         }
     }
 

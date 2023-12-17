@@ -26,6 +26,7 @@ namespace MC
             _global.GameStateChanged += OnGameStateChanged;
 
             _rpcFunctions.ReceivedBlockBreakRequest += OnReceivedBlockBreakRequest;
+            _rpcFunctions.ReceivedSendSyncChunkRequest += OnReceivedSendSyncChunkRequest;
         }
 
         public bool CreateServer(int port)
@@ -121,16 +122,20 @@ namespace MC
 
             GD.Print($"Receive block break request! {chunkPos} {blockLocalPos}");
 
+            var blockType = BlockType.Air;
+
             if (_chunkVariationDict.TryGetValue(chunkPos, out var chunkVariation))
             {
-                chunkVariation.BlockTypeDict[blockLocalPos] = BlockType.Air;
+                chunkVariation.BlockTypeDict[blockLocalPos] = blockType;
             }
             else
             {
                 chunkVariation = new ChunkVariation();
-                chunkVariation.BlockTypeDict[blockLocalPos] = BlockType.Air;
+                chunkVariation.BlockTypeDict[blockLocalPos] = blockType;
                 _chunkVariationDict.Add(chunkPos, chunkVariation);
             }
+
+            _rpcFunctions.Rpc(nameof(_rpcFunctions.SyncBlockVariation), chunkPos, blockLocalPos, (int)blockType);
         }
 
         void OnGameStateChanged(int state)
@@ -145,6 +150,11 @@ namespace MC
                     };
                     break;
             }
+        }
+
+        void OnReceivedSendSyncChunkRequest(int id, Vector2I chunkPos)
+        {
+
         }
     }
 

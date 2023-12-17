@@ -48,6 +48,8 @@ namespace MC
                 _global.LocalPlayer.LocalPlayerMoveToNewChunk += OnLocalPlayerMoveToNewChunk;
             };
 
+            _rpcFunctions.ReceivedBlockVariation += OnReceivedBlockVariation;
+
             AddChild(_chunkUpdateTimer);
             _chunkUpdateTimer.Timeout += OnChunkUpdateTimerTimeout;
             _chunkUpdateTimer.OneShot = true;
@@ -282,6 +284,25 @@ namespace MC
             }
 
             _chunkUpdateTimer.Start(_chunkUpdateInterval);
+        }
+
+        async void OnReceivedBlockVariation(Vector2I chunkPos, Vector3I blockLocalPos, int blockType)
+        {
+            BlockType type = (BlockType)blockType;
+
+            while (_isUpdating)
+                await ToSignal(this, SignalName.UpdateChunkDone);
+
+            if (!_chunkPosMap.TryGetValue(chunkPos, out Chunk chunk))
+                return;
+
+            chunk.ApplyBlockVariation(blockLocalPos, type);
+
+            if (_global.LocalPlayer == null)
+                return;
+
+            if (WorldPosToChunkPos(_global.LocalPlayer.Position) == chunkPos)
+                await Update(_newCenterChunkPos, _newCenterChunkPos != _oldCenterChunkPos);
         }
     }
 }
