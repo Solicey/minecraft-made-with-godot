@@ -46,6 +46,10 @@ namespace MC
             _global.LocalPlayerSet += () =>
             {
                 _global.LocalPlayer.LocalPlayerMoveToNewChunk += OnLocalPlayerMoveToNewChunk;
+                _global.LocalPlayer.LocalPlayerBreakBlock += (RayCastHitBlockInfo info) =>
+                {
+                    _rpcFunctions.EmitSignal(RPCFunctions.SignalName.ReceivedBlockVariation, info.ChunkPos, info.BlockLocalPos, (int)BlockType.Air, false);
+                };
             };
 
             _rpcFunctions.ReceivedBlockVariation += OnReceivedBlockVariation;
@@ -260,7 +264,7 @@ namespace MC
 
         async void OnChunkUpdateTimerTimeout()
         {
-            if (!_hasInit)
+            if (!_hasInit || _isUpdating)
                 return;
 
             if (_oldCenterChunkPos != _newCenterChunkPos)
@@ -286,23 +290,25 @@ namespace MC
             _chunkUpdateTimer.Start(_chunkUpdateInterval);
         }
 
-        async void OnReceivedBlockVariation(Vector2I chunkPos, Vector3I blockLocalPos, int blockType)
+        async void OnReceivedBlockVariation(Vector2I chunkPos, Vector3I blockLocalPos, int blockType, bool shallCompareTimeStamp, uint timeStamp = 0)
         {
             BlockType type = (BlockType)blockType;
 
             while (_isUpdating)
                 await ToSignal(this, SignalName.UpdateChunkDone);
 
-            if (!_chunkPosMap.TryGetValue(chunkPos, out Chunk chunk))
+            if (!_chunkPosMap.TryGetValue(chunkPos, out Chunk chunk) ||
+                !chunk.ApplyBlockVariation(blockLocalPos, type, shallCompareTimeStamp, timeStamp) ||
+                _global.LocalPlayer == null)
+            {
+                _chunkUpdateTimer.Start(_chunkUpdateInterval);
                 return;
-
-            chunk.ApplyBlockVariation(blockLocalPos, type);
-
-            if (_global.LocalPlayer == null)
-                return;
+            }
 
             if (WorldPosToChunkPos(_global.LocalPlayer.Position) == chunkPos)
                 await Update(_newCenterChunkPos, _newCenterChunkPos != _oldCenterChunkPos);
+
+            _chunkUpdateTimer.Start(_chunkUpdateInterval);
         }
     }
 }

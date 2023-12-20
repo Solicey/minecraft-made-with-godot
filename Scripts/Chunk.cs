@@ -8,6 +8,7 @@ namespace MC
     public partial class ChunkVariation : GodotObject
     {
         public Dictionary<Vector3I, BlockType> BlockTypeDict = new();
+        public Dictionary<Vector3I, uint> TimeStampDict = new();
     }
 
     public partial class Chunk : StaticBody3D
@@ -111,14 +112,22 @@ namespace MC
             return _blockTypeArray[blockLocalPos.X, blockLocalPos.Y, blockLocalPos.Z];
         }
 
-        public void ApplyBlockVariation(Vector3I blockLocalPos, BlockType blockType)
+        public bool ApplyBlockVariation(Vector3I blockLocalPos, BlockType blockType, bool shallCompareTimeStamp, uint timeStamp)
         {
             if (World.IsBlockLocalPosOutOfBound(blockLocalPos))
-                return;
+                return IsDirty;
 
+            if (shallCompareTimeStamp && _chunkVariation.TimeStampDict.TryGetValue(blockLocalPos, out uint oldTimeStamp) && (oldTimeStamp >= timeStamp && oldTimeStamp <= timeStamp + Global.MaxTimeStampDelta))
+                return IsDirty;
+
+            var oldBlockType = _blockTypeArray[blockLocalPos.X, blockLocalPos.Y, blockLocalPos.Z];
             _blockTypeArray[blockLocalPos.X, blockLocalPos.Y, blockLocalPos.Z] = blockType;
             
-            IsDirty = true;
+            if (shallCompareTimeStamp)
+                _chunkVariation.TimeStampDict[blockLocalPos] = timeStamp;
+            
+            IsDirty = (oldBlockType != blockType) || IsDirty;
+            return IsDirty;
         }
     }
 

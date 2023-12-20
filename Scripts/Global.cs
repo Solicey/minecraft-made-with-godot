@@ -22,6 +22,10 @@ namespace MC
 
         public static string PlayerGroupName { get; private set; } = "PlayerGroup";
 
+        public static uint MaxTimeStampValue { get; private set; } = 100;
+
+        public static uint MaxTimeStampDelta { get; private set; } = 50;
+
         public GameStartInfo GameStartInfo
         {
             get {  return _gameStartInfo; }

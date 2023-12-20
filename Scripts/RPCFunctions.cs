@@ -9,7 +9,7 @@ namespace MC
 
         [Signal] public delegate void ReceivedBlockBreakRequestEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal);
 
-        [Signal] public delegate void ReceivedBlockVariationEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, int blockType);
+        [Signal] public delegate void ReceivedBlockVariationEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, int blockType, bool shallCompareTimeStamp, uint timeStamp);
 
         [Signal] public delegate void ReceivedSendSyncChunkRequestEventHandler(int id, Vector2I chunkPos);
 
@@ -33,7 +33,7 @@ namespace MC
             }
         }
 
-        [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
         public void SendBreakBlockRequest(int id, Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal)
         {
             if (Multiplayer.IsServer())
@@ -42,10 +42,10 @@ namespace MC
             }
         }
 
-        [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable, CallLocal = true)]
-        public void SyncBlockVariation(Vector2I chunkPos, Vector3I blockLocalPos, BlockType blockType)
+        [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable, CallLocal = true)]
+        public void SyncBlockVariation(Vector2I chunkPos, Vector3I blockLocalPos, BlockType blockType, uint timeStamp)
         {
-            EmitSignal(SignalName.ReceivedBlockVariation, chunkPos, blockLocalPos, (int)blockType);
+            EmitSignal(SignalName.ReceivedBlockVariation, chunkPos, blockLocalPos, (int)blockType, true, timeStamp);
         }
 
         [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable, CallLocal = true)]
@@ -55,6 +55,12 @@ namespace MC
             {
                 EmitSignal(SignalName.ReceivedSendSyncChunkRequest, id, chunkPos);
             }
+        }
+
+        [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable, CallLocal = true)]
+        public void SyncChunkVariation(Vector2I chunkPos, int[] blockTypeDict)
+        {
+            
         }
     }
 

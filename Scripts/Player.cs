@@ -48,6 +48,9 @@ namespace MC
 
         RayCastHitBlockInfo _rayCastInfo = new();
 
+        [Export] float _breakBlockInterval = 0.3f;
+        Timer _breakBlockTimer = null;
+
         public override void _Ready()
         {
             _camera.ClearCurrent();
@@ -75,7 +78,11 @@ namespace MC
             Position = Global.PlayerSpawnPosition;
 
             // Generate selection box
-            GenerateSelectionBoxMesh();
+            // GenerateSelectionBoxMesh();
+
+            _breakBlockTimer = new Timer();
+            AddChild(_breakBlockTimer);
+            _breakBlockTimer.OneShot = true;
         }
 
         public override void _Process(double delta)
@@ -104,12 +111,21 @@ namespace MC
 
                     var worldPos = (_rayCast.GetCollisionPoint() - 0.5f * _rayCastInfo.HitFaceNormal);
                     var blockWorldPos = World.WorldPosToBlockWorldPos(worldPos);
-                    _selectionBox.GlobalPosition = blockWorldPos - (_selectionBox.Scale - Vector3.One) / 2f;
+                    _selectionBox.GlobalPosition = blockWorldPos - (_selectionBox.Scale - Vector3.One) / 2f + new Vector3(0.5f, 0.5f, 0.5f);
 
                     _selectionBox.Visible = true;
                     _rayCastInfo.ChunkPos = World.WorldPosToChunkPos(worldPos);
                     _rayCastInfo.BlockLocalPos = World.BlockWorldPosToBlockLocalPos(blockWorldPos);
                 }
+            }
+
+            if (_global.GameState != GameState.InGameActive)
+                return;
+
+            if (Input.IsActionPressed("Break") && _rayCastInfo.IsColliding && _breakBlockTimer.TimeLeft <= 0)
+            {
+                _breakBlockTimer.Start(_breakBlockInterval);
+                EmitSignal(SignalName.LocalPlayerBreakBlock, _rayCastInfo);
             }
         }
 
@@ -154,8 +170,7 @@ namespace MC
                 _jumping = true;
             _moveDirection = Input.GetVector("Left", "Right", "Forward", "Back");
 
-            if (Input.IsActionJustPressed("Break") && _rayCastInfo.IsColliding)
-                EmitSignal(SignalName.LocalPlayerBreakBlock, _rayCastInfo);
+            
         }
 
         bool InGame()

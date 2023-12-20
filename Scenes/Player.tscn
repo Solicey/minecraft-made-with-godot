@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://cgnp7juxesnfe"]
+[gd_scene load_steps=7 format=3 uid="uid://cgnp7juxesnfe"]
 
 [ext_resource type="Script" path="res://Scripts/Player.cs" id="1_p3810"]
 
@@ -8,6 +8,14 @@ size = Vector3(0.45, 0.45, 0.45)
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rfpb4"]
 radius = 0.4
 height = 1.8
+
+[sub_resource type="ORMMaterial3D" id="ORMMaterial3D_7hx35"]
+transparency = 1
+albedo_color = Color(1, 1, 0, 0.392157)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ynhyv"]
+material = SubResource("ORMMaterial3D_7hx35")
+size = Vector3(1.008, 1.008, 1.008)
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_pdxt8"]
 properties/0/path = NodePath(".:NameTag")
@@ -43,7 +51,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 target_position = Vector3(0, 0, -4)
 
 [node name="SelectionBox" type="MeshInstance3D" parent="."]
-transform = Transform3D(1.008, 0, 0, 0, 1.008, 0, 0, 0, 1.008, 0, 0, 0)
+visible = false
+cast_shadow = 0
+mesh = SubResource("BoxMesh_ynhyv")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_pdxt8")

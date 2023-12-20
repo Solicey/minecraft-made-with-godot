@@ -123,19 +123,25 @@ namespace MC
             GD.Print($"Receive block break request! {chunkPos} {blockLocalPos}");
 
             var blockType = BlockType.Air;
+            uint timeStamp = 0;
 
             if (_chunkVariationDict.TryGetValue(chunkPos, out var chunkVariation))
             {
                 chunkVariation.BlockTypeDict[blockLocalPos] = blockType;
+                if (chunkVariation.TimeStampDict.ContainsKey(blockLocalPos))
+                    timeStamp = chunkVariation.TimeStampDict[blockLocalPos] = (chunkVariation.TimeStampDict[blockLocalPos] + 1) % Global.MaxTimeStampValue;
+                else
+                    chunkVariation.TimeStampDict[blockLocalPos] = 0;
             }
             else
             {
                 chunkVariation = new ChunkVariation();
                 chunkVariation.BlockTypeDict[blockLocalPos] = blockType;
+                chunkVariation.TimeStampDict[blockLocalPos] = 0;
                 _chunkVariationDict.Add(chunkPos, chunkVariation);
             }
 
-            _rpcFunctions.Rpc(nameof(_rpcFunctions.SyncBlockVariation), chunkPos, blockLocalPos, (int)blockType);
+            _rpcFunctions.Rpc(nameof(_rpcFunctions.SyncBlockVariation), chunkPos, blockLocalPos, (int)blockType, timeStamp);
         }
 
         void OnGameStateChanged(int state)

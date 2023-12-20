@@ -16,8 +16,7 @@ namespace MC
         [Export] float _timeOutTime = 3.0f;
         Timer _timeOutTimer = new Timer();
 
-        [Export] float _breakBlockInterval = 0.1f;
-        Timer _breakBlockTimer = new Timer();
+
 
         public bool IsConnectedToServer()
         {
@@ -39,8 +38,7 @@ namespace MC
 
             _global.GameStateChanged += OnGameStateChanged;
 
-            AddChild(_breakBlockTimer);
-            _breakBlockTimer.OneShot = true;
+
         }
 
         public async Task<bool> CreateClient(string address, int port)
@@ -126,12 +124,7 @@ namespace MC
 
         void OnLocalPlayerBreakBlock(RayCastHitBlockInfo info)
         {
-            if (_breakBlockTimer.TimeLeft > 0)
-                return;
-
-            _rpcFunctions.RpcId(Global.ServerId, nameof(_rpcFunctions.SendBreakBlockRequest), Multiplayer.GetUniqueId(), info.ChunkPos, info.BlockLocalPos, info.HitFaceNormal);    
-
-            _breakBlockTimer.Start(_breakBlockInterval); 
+            _rpcFunctions.RpcId(Global.ServerId, nameof(_rpcFunctions.SendBreakBlockRequest), Multiplayer.GetUniqueId(), info.ChunkPos, info.BlockLocalPos, info.HitFaceNormal);
         }
 
         void OnGameStateChanged(int state)
