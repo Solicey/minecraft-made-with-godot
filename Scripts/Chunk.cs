@@ -13,6 +13,8 @@ namespace MC
 
     public partial class Chunk : StaticBody3D
     {
+        [Signal] public delegate void SyncDataArrivedEventHandler(int[] array);
+
         public Vector2I ChunkPosition
         {
             get
@@ -29,6 +31,8 @@ namespace MC
 
         public bool IsDirty { get; private set; } = false;
 
+        public bool IsSyncDataArrived { get; set; } = false;
+
         Vector3I _shape;
 
         [Export] CollisionShape3D _collisionShape;
@@ -40,35 +44,62 @@ namespace MC
         SurfaceTool _surfaceTool = new();
 
         BlockManager _blockManager;
+        RPCFunctions _rpcFunctions;
 
         ChunkVariation _chunkVariation = new();
+
+        TerrainGenerator _generator = null;
+        BlockTypeGetter _typeGetter = null;
 
         public override void _Ready()
         {
             _blockManager = GetNode<BlockManager>("/root/BlockManager");
+            _rpcFunctions = GetNode<RPCFunctions>("/root/RpcFunctions");
 
             _shape = Global.ChunkShape;
             _blockTypeArray = new BlockType[_shape.X, _shape.Y, _shape.Z];
         }
 
-        public async Task SyncData(Vector2I chunkPos, TerrainGenerator generator)
+        public void Init(TerrainGenerator generator, BlockTypeGetter typeGetter)
+        {
+            _generator = generator;
+            _typeGetter = typeGetter;
+        }
+
+        public async void SyncData(Vector2I chunkPos)
         {
             _meshInstance.Mesh = null;
             ChunkPosition = chunkPos;
 
-            Task task = Task.Run(() =>
+            await Task.Run(() =>
             {
-                generator(chunkPos, _blockTypeArray);
+                _generator(chunkPos, _blockTypeArray);
             });
 
+            IsSyncDataArrived = false;
             
-
-            await task;
+            _rpcFunctions.RpcId(Global.ServerId, nameof(_rpcFunctions.SendSyncChunkRequest), Multiplayer.GetUniqueId(), chunkPos);
 
             IsDirty = true;
+
+            if (IsSyncDataArrived)
+                return;
+
+            GD.Print($"Chunk {chunkPos} await for remote data");
+
+            var awaiter = ToSignal(this, SignalName.SyncDataArrived);
+            await awaiter;
+            int[] array = awaiter.GetResult()[0].As<int[]>();
+
+            for (int i = 0; i < array.Length; i += Global.RpcBlockVariantUnitCount)
+            {
+                var blockLocalPos = new Vector3I(array[i], array[i + 1], array[i + 2]);
+            }
+
+            GD.Print($"Chunk {chunkPos} finish await");
         }
 
-        public async Task SyncMesh(BlockTypeGetter typeGetter)
+        public async Task SyncMesh()
         {
             ArrayMesh mesh = new();
 
@@ -87,16 +118,19 @@ namespace MC
                             var blockLocalPos = new Vector3I(x, y, z);
                             var blockWorldPos = chunkWorldPos + blockLocalPos;
 
-                            _blockManager.DrawBlock(_blockTypeArray[x, y, z], blockLocalPos, blockWorldPos, _surfaceTool, typeGetter);
-
+                            _blockManager.DrawBlock(_blockTypeArray[x, y, z], blockLocalPos, blockWorldPos, _surfaceTool, _typeGetter);
                         }
                     }
                 }
+
+                //GD.Print("Reach here!");
 
                 _surfaceTool.SetMaterial(_blockManager.Material);
                 mesh = _surfaceTool.Commit();
 
             });
+
+            //GD.Print("Sync mesh done!");
 
             _meshInstance.Mesh = mesh;
             _collisionShape.Shape = mesh.CreateTrimeshShape();
@@ -128,6 +162,11 @@ namespace MC
             
             IsDirty = (oldBlockType != blockType) || IsDirty;
             return IsDirty;
+        }
+
+        async void WaitForSyncDataArrivedSignal()
+        {
+            await ToSignal(this, SignalName.SyncDataArrived);
         }
     }
 

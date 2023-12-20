@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -30,6 +31,7 @@ namespace MC
         bool _isUpdating = false;
 
         [Signal] public delegate void UpdateChunkDoneEventHandler();
+        [Signal] public delegate void ReceivedBlockVariationEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, int blockType, bool shallCompareTimeStamp, uint timeStamp);
 
         public override void _Ready()
         {
@@ -46,13 +48,13 @@ namespace MC
             _global.LocalPlayerSet += () =>
             {
                 _global.LocalPlayer.LocalPlayerMoveToNewChunk += OnLocalPlayerMoveToNewChunk;
-                _global.LocalPlayer.LocalPlayerBreakBlock += (RayCastHitBlockInfo info) =>
-                {
-                    _rpcFunctions.EmitSignal(RPCFunctions.SignalName.ReceivedBlockVariation, info.ChunkPos, info.BlockLocalPos, (int)BlockType.Air, false);
-                };
+                _global.LocalPlayer.LocalPlayerBreakBlock += OnLocalPlayerBreakBlock;
             };
 
             _rpcFunctions.ReceivedBlockVariation += OnReceivedBlockVariation;
+            ReceivedBlockVariation += OnReceivedBlockVariation;
+
+            _rpcFunctions.ReceivedChunkVariation += OnReceivedChunkVariation;
 
             AddChild(_chunkUpdateTimer);
             _chunkUpdateTimer.Timeout += OnChunkUpdateTimerTimeout;
@@ -102,6 +104,11 @@ namespace MC
                 blockLocalPos.Z < 0 || blockLocalPos.Z >= Global.ChunkShape.Z;
         }
 
+        public static int ChunkManhattanDistance(Vector2I chunkA, Vector2I chunkB)
+        {
+            return Math.Abs(chunkA.X - chunkB.X) + Math.Abs(chunkA.Y - chunkB.Y);
+        }
+
         public async Task<bool> Init()
         {
             if (_isUpdating)
@@ -120,9 +127,13 @@ namespace MC
                 var chunkPos = centerChunkPos + _renderOrder[i];
                 var chunk = _chunkScene.Instantiate<Chunk>();
                 AddChild(chunk);
+                chunk.Init(GenerateSimpleTerrain, GetBlockType);
 
                 _chunkPosMap[chunkPos] = chunk;
-                var task = chunk.SyncData(chunkPos, GenerateSimpleTerrain);
+                var task = Task.Run(() =>
+                {
+                    chunk.CallDeferred(nameof(chunk.SyncData), chunkPos);
+                });
                 tasks.Add(task);
             }
             await Task.WhenAll(tasks);
@@ -132,7 +143,7 @@ namespace MC
             {
                 var chunkPos = centerChunkPos + _renderOrder[i];
                 var chunk = _chunkPosMap[chunkPos];
-                var task = chunk.SyncMesh(GetBlockType);
+                var task = chunk.SyncMesh();
                 tasks.Add(task);
             }
             await Task.WhenAll(tasks);
@@ -192,14 +203,14 @@ namespace MC
 
         async Task<bool> Update(Vector2I centerChunkPos, bool isCenterChunkPosNew)
         {
-            if (_isUpdating)
-                return false;
-            _isUpdating = true;
+            GD.Print("Begin update!");
 
             List<Task> tasks = new();
 
             if (isCenterChunkPosNew)
             {
+                GD.Print("Begin sync data!");
+
                 List<Vector2I> chunkPositionsToUpdate = new();
                 Dictionary<Vector2I, Chunk> newChunkPosMap = new();
                 foreach (var delta in _renderOrder)
@@ -221,14 +232,24 @@ namespace MC
                 {
                     var newChunkPos = chunkPositionsToUpdate[i++];
                     newChunkPosMap[newChunkPos] = chunk;
+                }
+                _chunkPosMap = newChunkPosMap;
 
-                    var task = chunk.SyncData(newChunkPos, GenerateSimpleTerrain);
+                GD.Print($"Chunks positions to update: {chunkPositionsToUpdate.Count}");
+
+                foreach (var chunkPos in chunkPositionsToUpdate)
+                {
+                    var chunk = _chunkPosMap[chunkPos];
+                    var task = Task.Run(() =>
+                    {
+                        chunk.CallDeferred(nameof(chunk.SyncData), chunkPos);
+                    });
                     tasks.Add(task);
                 }
                 await Task.WhenAll(tasks);
-
-                _chunkPosMap = newChunkPosMap;
             }
+
+            GD.Print("Update sync data done!");
 
             var dirtyChunkPositions = new HashSet<Vector2I>();
             foreach (var chunk in _chunkPosMap.Values)
@@ -236,7 +257,9 @@ namespace MC
                 if (chunk.IsDirty)
                     dirtyChunkPositions.Add(chunk.ChunkPosition);
             }
-            
+
+            GD.Print($"Dirty chunks: {dirtyChunkPositions.Count}");
+
             tasks.Clear();
             foreach (var delta in _renderOrder)
             {
@@ -249,15 +272,14 @@ namespace MC
                     dirtyChunkPositions.Contains(chunkPos + Vector2I.Right))
                 {
                     var chunk = _chunkPosMap[chunkPos];
-                    var task = chunk.SyncMesh(GetBlockType);
+                    var task = chunk.SyncMesh();
+                    GD.Print($"Sync mesh: {chunkPos}");
                     tasks.Add(task);
                 }
             }
             await Task.WhenAll(tasks);
 
-            _isUpdating = false;
-            EmitSignal(SignalName.UpdateChunkDone);
-            GD.Print("World update done");
+            GD.Print("End update!");
 
             return true;
         }
@@ -266,6 +288,8 @@ namespace MC
         {
             if (!_hasInit || _isUpdating)
                 return;
+            _isUpdating = true;
+            //GD.Print("Timer update begin!");
 
             if (_oldCenterChunkPos != _newCenterChunkPos)
             {
@@ -287,28 +311,73 @@ namespace MC
                     await Update(_newCenterChunkPos, false);
             }
 
+            _isUpdating = false;
+            EmitSignal(SignalName.UpdateChunkDone);
             _chunkUpdateTimer.Start(_chunkUpdateInterval);
+
+            //GD.Print("Timer update end!");
         }
 
         async void OnReceivedBlockVariation(Vector2I chunkPos, Vector3I blockLocalPos, int blockType, bool shallCompareTimeStamp, uint timeStamp = 0)
         {
+            GD.Print($"before wait: {shallCompareTimeStamp}");
             BlockType type = (BlockType)blockType;
-
             while (_isUpdating)
-                await ToSignal(this, SignalName.UpdateChunkDone);
+            {
+                GD.Print($"have to wait: {shallCompareTimeStamp}");
+                await Task.Run(() =>
+                {
+                    CallDeferred(nameof(WaitForUpdateChunkDone));
+                });
+            }
+            _isUpdating = true;
+
+            GD.Print($"after wait: {shallCompareTimeStamp}");
 
             if (!_chunkPosMap.TryGetValue(chunkPos, out Chunk chunk) ||
                 !chunk.ApplyBlockVariation(blockLocalPos, type, shallCompareTimeStamp, timeStamp) ||
                 _global.LocalPlayer == null)
             {
+                _isUpdating = false;
+                EmitSignal(SignalName.UpdateChunkDone);
                 _chunkUpdateTimer.Start(_chunkUpdateInterval);
                 return;
             }
 
-            if (WorldPosToChunkPos(_global.LocalPlayer.Position) == chunkPos)
+            if (ChunkManhattanDistance(_global.LocalPlayer.CurrentChunkPos, chunkPos) <= Global.FastChunkUpdateMaxManhattanDistance)
+            {
+                GD.Print($"before update: {shallCompareTimeStamp}");
                 await Update(_newCenterChunkPos, _newCenterChunkPos != _oldCenterChunkPos);
+            }
 
+            GD.Print($"after update: {shallCompareTimeStamp}");
+
+            _isUpdating = false;
+            EmitSignal(SignalName.UpdateChunkDone);
             _chunkUpdateTimer.Start(_chunkUpdateInterval);
+        }
+
+        void OnReceivedChunkVariation(Vector2I chunkPos, int[] array)
+        {
+            GD.Print("OnReceivedChunkVariation");
+
+            if (!_chunkPosMap.TryGetValue(chunkPos, out Chunk chunk))
+                return;
+
+            chunk.IsSyncDataArrived = true;
+            /*GD.Print("Emit sync data arrived signal");*/
+            chunk.EmitSignal(Chunk.SignalName.SyncDataArrived, array);
+        }
+
+        void OnLocalPlayerBreakBlock(RayCastHitBlockInfo info)
+        {
+            //GD.Print("LocalPlayerBreakBlock");
+            EmitSignal(SignalName.ReceivedBlockVariation, info.ChunkPos, info.BlockLocalPos, (int)BlockType.Air, false, 0);
+        }
+
+        async void WaitForUpdateChunkDone()
+        {
+            await ToSignal(this, SignalName.UpdateChunkDone);
         }
     }
 }

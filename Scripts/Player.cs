@@ -23,6 +23,8 @@ namespace MC
         [Export] public int Id { get; set; }
         [Export] public string NameTag { get; set; }
 
+        public Vector2I CurrentChunkPos { get; set; }
+
         Global _global;
 
         [Export] Camera3D _camera;
@@ -91,6 +93,7 @@ namespace MC
                 return;
 
             var chunkPos = World.WorldPosToChunkPos(Position);
+            CurrentChunkPos = chunkPos;
             if (chunkPos != _lastTimeChunkPos)
             {
                 _lastTimeChunkPos = chunkPos;

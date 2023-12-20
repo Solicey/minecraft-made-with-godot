@@ -1,12 +1,15 @@
 using Godot;
-using Godot.Collections;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace MC
 {
     public partial class Server : Node
     {
+        [Signal] public delegate void UpdateChunkVariationDictDoneEventHandler();
+
         [Export] MultiplayerSpawner _multiplayerSpawner;
 
         Global _global;
@@ -17,6 +20,7 @@ namespace MC
         Dictionary<int, Node> _playerDict = new();
 
         Dictionary<Vector2I, ChunkVariation> _chunkVariationDict = new();
+        bool _isUpdatingVarDict = false;
 
         public override void _Ready()
         {
@@ -115,15 +119,19 @@ namespace MC
             _multiplayer.CompleteAuth(id);
         }
 
-        void OnReceivedBlockBreakRequest(Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal)
+        async void OnReceivedBlockBreakRequest(Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal)
         {
             if (World.IsBlockLocalPosOutOfBound(blockLocalPos))
                 return;
 
-            GD.Print($"Receive block break request! {chunkPos} {blockLocalPos}");
+            //GD.Print($"Receive block break request! {chunkPos} {blockLocalPos}");
 
             var blockType = BlockType.Air;
             uint timeStamp = 0;
+
+            while (_isUpdatingVarDict)
+                await ToSignal(this, SignalName.UpdateChunkVariationDictDone);
+            _isUpdatingVarDict = true;
 
             if (_chunkVariationDict.TryGetValue(chunkPos, out var chunkVariation))
             {
@@ -142,6 +150,9 @@ namespace MC
             }
 
             _rpcFunctions.Rpc(nameof(_rpcFunctions.SyncBlockVariation), chunkPos, blockLocalPos, (int)blockType, timeStamp);
+
+            _isUpdatingVarDict = false;
+            EmitSignal(SignalName.UpdateChunkVariationDictDone);
         }
 
         void OnGameStateChanged(int state)
@@ -158,9 +169,50 @@ namespace MC
             }
         }
 
-        void OnReceivedSendSyncChunkRequest(int id, Vector2I chunkPos)
+        async void OnReceivedSendSyncChunkRequest(int id, Vector2I chunkPos)
         {
+            while (_isUpdatingVarDict)
+                await Task.Run(() =>
+                {
+                    CallDeferred(nameof(WaitForUpdateChunkVariationDictDone));
+                });
+            _isUpdatingVarDict = true;
 
+            if (!_chunkVariationDict.TryGetValue(chunkPos, out var chunkVariation))
+            {
+                _rpcFunctions.RpcId(id, nameof(_rpcFunctions.SyncChunkVariation), chunkPos, System.Array.Empty<int>());
+                _isUpdatingVarDict = false;
+                EmitSignal(SignalName.UpdateChunkVariationDictDone);
+                return;
+            }
+
+            // X, Y, Z, blockType, timeStamp
+            int[] array = new int[chunkVariation.BlockTypeDict.Count * Global.RpcBlockVariantUnitCount];
+            await Task.Run(() =>
+            {
+                int i = 0;
+                foreach (var pair in chunkVariation.BlockTypeDict)
+                {
+                    array[i++] = pair.Key.X;
+                    array[i++] = pair.Key.Y;
+                    array[i++] = pair.Key.Z;
+                    array[i++] = (int)pair.Value;
+
+                    if (!chunkVariation.TimeStampDict.TryGetValue(pair.Key, out var timeStamp))
+                        array[i++] = 0;
+                    else array[i++] = (int)timeStamp;
+                }
+            });
+
+            _rpcFunctions.RpcId(id, nameof(_rpcFunctions.SyncChunkVariation), chunkPos, array);
+
+            _isUpdatingVarDict = false;
+            EmitSignal(SignalName.UpdateChunkVariationDictDone);
+        }
+
+        async void WaitForUpdateChunkVariationDictDone()
+        {
+            await ToSignal(this, SignalName.UpdateChunkVariationDictDone);
         }
     }
 

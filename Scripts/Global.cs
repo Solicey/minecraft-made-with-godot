@@ -12,7 +12,7 @@ namespace MC
 
         public static int RenderChunkCount { get { return (RenderChunkDistance * 2 + 1) * (RenderChunkDistance * 2 + 1); } }
         
-        public static int RenderChunkDistance { get; private set; } = 5;
+        public static int RenderChunkDistance { get; private set; } = 1;
 
         public static Vector3I ChunkShape { get; private set; } = new Vector3I(16, 64, 16);
 
@@ -25,6 +25,10 @@ namespace MC
         public static uint MaxTimeStampValue { get; private set; } = 100;
 
         public static uint MaxTimeStampDelta { get; private set; } = 50;
+
+        public static int RpcBlockVariantUnitCount { get; private set; } = 5;
+
+        public static int FastChunkUpdateMaxManhattanDistance { get; private set; } = 2;
 
         public GameStartInfo GameStartInfo
         {

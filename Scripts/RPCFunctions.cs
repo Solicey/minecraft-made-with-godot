@@ -13,6 +13,8 @@ namespace MC
 
         [Signal] public delegate void ReceivedSendSyncChunkRequestEventHandler(int id, Vector2I chunkPos);
 
+        [Signal] public delegate void ReceivedChunkVariationEventHandler(Vector2I chunkPos, int[] array);
+
         public override void _Ready()
         {
             _global = GetNode<Global>("/root/Global");
@@ -45,6 +47,7 @@ namespace MC
         [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable, CallLocal = true)]
         public void SyncBlockVariation(Vector2I chunkPos, Vector3I blockLocalPos, BlockType blockType, uint timeStamp)
         {
+            //GD.Print($"Sync block variation: chunkPos: {chunkPos}, blockLocalPos: {blockLocalPos}, blockType: {blockType}, timeStamp: {timeStamp}");
             EmitSignal(SignalName.ReceivedBlockVariation, chunkPos, blockLocalPos, (int)blockType, true, timeStamp);
         }
 
@@ -53,14 +56,16 @@ namespace MC
         {
             if (Multiplayer.IsServer())
             {
+                //GD.Print($"Received sync chunk request, id: {id}, chunkPos: {chunkPos}");
                 EmitSignal(SignalName.ReceivedSendSyncChunkRequest, id, chunkPos);
             }
         }
 
         [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable, CallLocal = true)]
-        public void SyncChunkVariation(Vector2I chunkPos, int[] blockTypeDict)
+        public void SyncChunkVariation(Vector2I chunkPos, int[] array)
         {
-            
+            //GD.Print($"Sync chunk variation, chunkPos: {chunkPos}");
+            EmitSignal(SignalName.ReceivedChunkVariation, chunkPos, array);
         }
     }
 
