@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using static Godot.TextServer;
 
 namespace MC
@@ -8,6 +9,7 @@ namespace MC
     {
         public bool IsColliding { get; set; } = false;
         public Vector2I ChunkPos { get; set; }
+        public Vector3 BlockWorldPos { get; set; }
         public Vector3I BlockLocalPos { get; set; }
         public Vector3 HitFaceNormal { get; set; }
     }
@@ -20,10 +22,14 @@ namespace MC
 
         [Signal] public delegate void LocalPlayerBreakBlockEventHandler(RayCastHitBlockInfo info);
 
+        [Signal] public delegate void LocalPlayerPlaceBlockEventHandler(RayCastHitBlockInfo info);
+
         [Export] public int Id { get; set; }
         [Export] public string NameTag { get; set; }
 
         public Vector2I CurrentChunkPos { get; set; }
+
+        public HashSet<Vector3I> OccupiedBlockWorldPositions = new();
 
         Global _global;
 
@@ -36,9 +42,7 @@ namespace MC
         [Export] float _acceleration = 100f;
         [Export] float _jumpHeight = 1f;
         [Export] float _camSensitivity = 0.01f;
-
-        [Export] float _checkChunkInterval = 0.3f;
-        Vector2I _lastTimeChunkPos = new();
+        [Export] float _playerHeight = 1.8f;
 
         bool _jumping = false;
         Vector2 _moveDirection = new();
@@ -50,19 +54,20 @@ namespace MC
 
         RayCastHitBlockInfo _rayCastInfo = new();
 
-        [Export] float _breakBlockInterval = 0.3f;
+        [Export] float _breakBlockInterval = 0.2f;
+        [Export] float _placeBlockInterval = 0.2f;
         Timer _breakBlockTimer = null;
+        Timer _placeBlockTimer = null;
 
         public override void _Ready()
         {
             _camera.ClearCurrent();
+            _global = GetNode<Global>("/root/Global");
 
             if (!IsMultiplayerAuthority())
                 return;
 
-            _global = GetNode<Global>("/root/Global");
             _global.LocalPlayer = this;  // Should send signal
-
             _global.GameStateChanged += OnGameStateChanged;
         }
 
@@ -85,20 +90,27 @@ namespace MC
             _breakBlockTimer = new Timer();
             AddChild(_breakBlockTimer);
             _breakBlockTimer.OneShot = true;
+
+            _placeBlockTimer = new Timer();
+            AddChild(_placeBlockTimer);
+            _placeBlockTimer.OneShot = true;
         }
 
         public override void _Process(double delta)
         {
-            if (!IsMultiplayerAuthority() || !InGame())
+            if (!InGame())
                 return;
+
+            UpdateOccupiedBlockPositions();
+
+            if (!IsMultiplayerAuthority())
+                return;
+
+            if (Position.Y < 0)
+                Position = Global.PlayerSpawnPosition;
 
             var chunkPos = World.WorldPosToChunkPos(Position);
             CurrentChunkPos = chunkPos;
-            if (chunkPos != _lastTimeChunkPos)
-            {
-                _lastTimeChunkPos = chunkPos;
-                EmitSignal(SignalName.LocalPlayerMoveToNewChunk, chunkPos);
-            }
 
             _selectionBox.Visible = false;
             _rayCastInfo.IsColliding = false;
@@ -118,6 +130,7 @@ namespace MC
 
                     _selectionBox.Visible = true;
                     _rayCastInfo.ChunkPos = World.WorldPosToChunkPos(worldPos);
+                    _rayCastInfo.BlockWorldPos = blockWorldPos;
                     _rayCastInfo.BlockLocalPos = World.BlockWorldPosToBlockLocalPos(blockWorldPos);
                 }
             }
@@ -127,8 +140,14 @@ namespace MC
 
             if (Input.IsActionPressed("Break") && _rayCastInfo.IsColliding && _breakBlockTimer.TimeLeft <= 0)
             {
-                _breakBlockTimer.Start(_breakBlockInterval);
                 EmitSignal(SignalName.LocalPlayerBreakBlock, _rayCastInfo);
+                _breakBlockTimer.Start(_breakBlockInterval);
+            }
+
+            if (Input.IsActionPressed("Place") && _rayCastInfo.IsColliding && _placeBlockTimer.TimeLeft <= 0)
+            {
+                EmitSignal(SignalName.LocalPlayerPlaceBlock, _rayCastInfo);
+                _placeBlockTimer.Start(_placeBlockInterval);
             }
         }
 
@@ -246,6 +265,15 @@ namespace MC
             _selectionBox.Mesh = mesh;
             _selectionBox.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
             _selectionBox.Visible = false;
+        }
+
+        void UpdateOccupiedBlockPositions()
+        {
+            OccupiedBlockWorldPositions.Clear();
+            var headOccupiedBlockWorldPos = World.WorldPosToBlockWorldPos(Position + new Vector3(0, _playerHeight / 2f, 0));
+            var footOccupiedBlockWorldPos = World.WorldPosToBlockWorldPos(Position - new Vector3(0, _playerHeight / 2f, 0));
+            for (int y = footOccupiedBlockWorldPos.Y; y <= headOccupiedBlockWorldPos.Y; y++)
+                OccupiedBlockWorldPositions.Add(new Vector3I(headOccupiedBlockWorldPos.X, y, headOccupiedBlockWorldPos.Z));
         }
     }
 }

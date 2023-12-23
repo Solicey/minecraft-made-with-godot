@@ -16,8 +16,6 @@ namespace MC
         [Export] float _timeOutTime = 3.0f;
         Timer _timeOutTimer = new Timer();
 
-
-
         public bool IsConnectedToServer()
         {
             return _peer != null && _peer.GetConnectionStatus() == MultiplayerPeer.ConnectionStatus.Connected;
@@ -37,8 +35,6 @@ namespace MC
             };
 
             _global.GameStateChanged += OnGameStateChanged;
-
-
         }
 
         public async Task<bool> CreateClient(string address, int port)
@@ -122,20 +118,12 @@ namespace MC
             _multiplayer = null;
         }
 
-        void OnLocalPlayerBreakBlock(RayCastHitBlockInfo info)
-        {
-            _rpcFunctions.RpcId(Global.ServerId, nameof(_rpcFunctions.SendBreakBlockRequest), Multiplayer.GetUniqueId(), info.ChunkPos, info.BlockLocalPos, info.HitFaceNormal);
-        }
-
         void OnGameStateChanged(int state)
         {
             GameState gameState = (GameState)state;
             switch (gameState)
             {
-                case GameState.ClientPlayerSynced_SyncingWorldSeed:
-                    if (_global.LocalPlayer != null)
-                        _global.LocalPlayer.LocalPlayerBreakBlock += OnLocalPlayerBreakBlock;
-                    break;
+                
             }
         }
     }

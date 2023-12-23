@@ -29,10 +29,9 @@ namespace MC
 
             _global.GameStateChanged += OnGameStateChanged;
 
-            _rpcFunctions.ReceivedBlockBreakRequest += OnReceivedBlockBreakRequest;
+            _rpcFunctions.ReceivedBlockVaryRequest += OnReceivedBlockVaryRequest;
             _rpcFunctions.ReceivedSendSyncChunkRequest += OnReceivedSendSyncChunkRequest;
         }
-
         public bool CreateServer(int port)
         {
             Reset();
@@ -119,23 +118,24 @@ namespace MC
             _multiplayer.CompleteAuth(id);
         }
 
-        async void OnReceivedBlockBreakRequest(Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal)
+        async void OnReceivedBlockVaryRequest(Vector2I chunkPos, Vector3I blockLocalPos, int blockType)
         {
             if (World.IsBlockLocalPosOutOfBound(blockLocalPos))
                 return;
 
-            //GD.Print($"Receive block break request! {chunkPos} {blockLocalPos}");
-
-            var blockType = BlockType.Air;
-            uint timeStamp = 0;
-
             while (_isUpdatingVarDict)
-                await ToSignal(this, SignalName.UpdateChunkVariationDictDone);
+                await Task.Run(() =>
+                {
+                    CallDeferred(nameof(WaitForUpdateChunkVariationDictDone));
+                });
             _isUpdatingVarDict = true;
+
+            BlockType type = (BlockType)blockType;
+            uint timeStamp = 0;
 
             if (_chunkVariationDict.TryGetValue(chunkPos, out var chunkVariation))
             {
-                chunkVariation.BlockTypeDict[blockLocalPos] = blockType;
+                chunkVariation.BlockTypeDict[blockLocalPos] = type;
                 if (chunkVariation.TimeStampDict.ContainsKey(blockLocalPos))
                     timeStamp = chunkVariation.TimeStampDict[blockLocalPos] = (chunkVariation.TimeStampDict[blockLocalPos] + 1) % Global.MaxTimeStampValue;
                 else
@@ -144,12 +144,12 @@ namespace MC
             else
             {
                 chunkVariation = new ChunkVariation();
-                chunkVariation.BlockTypeDict[blockLocalPos] = blockType;
+                chunkVariation.BlockTypeDict[blockLocalPos] = type;
                 chunkVariation.TimeStampDict[blockLocalPos] = 0;
                 _chunkVariationDict.Add(chunkPos, chunkVariation);
             }
 
-            _rpcFunctions.Rpc(nameof(_rpcFunctions.SyncBlockVariation), chunkPos, blockLocalPos, (int)blockType, timeStamp);
+            _rpcFunctions.Rpc(nameof(_rpcFunctions.SyncBlockVariation), chunkPos, blockLocalPos, blockType, timeStamp);
 
             _isUpdatingVarDict = false;
             EmitSignal(SignalName.UpdateChunkVariationDictDone);
@@ -160,12 +160,7 @@ namespace MC
             GameState gameState = (GameState)state;
             switch (gameState)
             {
-                case GameState.ServerPlayerSynced_InitingWorld:
-                    _global.LocalPlayer.LocalPlayerBreakBlock += (RayCastHitBlockInfo info) =>
-                    {
-                        OnReceivedBlockBreakRequest(info.ChunkPos, info.BlockLocalPos, info.HitFaceNormal);
-                    };
-                    break;
+                
             }
         }
 

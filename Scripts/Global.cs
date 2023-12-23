@@ -12,11 +12,11 @@ namespace MC
 
         public static int RenderChunkCount { get { return (RenderChunkDistance * 2 + 1) * (RenderChunkDistance * 2 + 1); } }
         
-        public static int RenderChunkDistance { get; private set; } = 1;
+        public static int RenderChunkDistance { get; private set; } = 4;
 
         public static Vector3I ChunkShape { get; private set; } = new Vector3I(16, 64, 16);
 
-        public static Vector3 PlayerSpawnPosition { get; private set; } = new Vector3(0, 64, 0);
+        public static Vector3 PlayerSpawnPosition { get; private set; } = new Vector3(0, 65, 0);
 
         public static float Gravity { get; private set; } = 9.8f;
 

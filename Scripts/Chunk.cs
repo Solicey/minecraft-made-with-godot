@@ -85,18 +85,24 @@ namespace MC
             if (IsSyncDataArrived)
                 return;
 
-            GD.Print($"Chunk {chunkPos} await for remote data");
+            //GD.Print($"Chunk {chunkPos} await for remote data");
 
             var awaiter = ToSignal(this, SignalName.SyncDataArrived);
             await awaiter;
             int[] array = awaiter.GetResult()[0].As<int[]>();
 
+            _chunkVariation.TimeStampDict.Clear();
             for (int i = 0; i < array.Length; i += Global.RpcBlockVariantUnitCount)
             {
                 var blockLocalPos = new Vector3I(array[i], array[i + 1], array[i + 2]);
+                var blockType = (BlockType)array[i + 3];
+                var timeStamp = (uint)array[i + 4];
+
+                _blockTypeArray[blockLocalPos.X, blockLocalPos.Y, blockLocalPos.Z] = blockType;
+                _chunkVariation.TimeStampDict[blockLocalPos] = timeStamp;
             }
 
-            GD.Print($"Chunk {chunkPos} finish await");
+            //GD.Print($"Chunk {chunkPos} finish await");
         }
 
         public async Task SyncMesh()
@@ -141,7 +147,11 @@ namespace MC
         public BlockType GetLocalBlockType(Vector3I blockLocalPos)
         {
             if (World.IsBlockLocalPosOutOfBound(blockLocalPos))
+            {
+                if (blockLocalPos.Y >= Global.ChunkShape.Y)
+                    return BlockType.Air;
                 return BlockType.Stone;
+            }
 
             return _blockTypeArray[blockLocalPos.X, blockLocalPos.Y, blockLocalPos.Z];
         }

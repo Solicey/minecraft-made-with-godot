@@ -7,13 +7,14 @@ namespace MC
     {
         Global _global;
 
-        [Signal] public delegate void ReceivedBlockBreakRequestEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal);
+        [Signal] public delegate void ReceivedBlockVaryRequestEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, int blockType);
 
         [Signal] public delegate void ReceivedBlockVariationEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, int blockType, bool shallCompareTimeStamp, uint timeStamp);
 
         [Signal] public delegate void ReceivedSendSyncChunkRequestEventHandler(int id, Vector2I chunkPos);
 
         [Signal] public delegate void ReceivedChunkVariationEventHandler(Vector2I chunkPos, int[] array);
+
 
         public override void _Ready()
         {
@@ -35,12 +36,12 @@ namespace MC
             }
         }
 
-        [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-        public void SendBreakBlockRequest(int id, Vector2I chunkPos, Vector3I blockLocalPos, Vector3 hitFaceNormal)
+        [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable, CallLocal = true)]
+        public void SendVaryBlockRequest(int id, Vector2I chunkPos, Vector3I blockLocalPos, BlockType blockType)
         {
             if (Multiplayer.IsServer())
             {
-                EmitSignal(SignalName.ReceivedBlockBreakRequest, chunkPos, blockLocalPos, hitFaceNormal);
+                EmitSignal(SignalName.ReceivedBlockVaryRequest, chunkPos, blockLocalPos, (int)blockType);
             }
         }
 

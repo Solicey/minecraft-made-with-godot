@@ -10,7 +10,6 @@ namespace MC
         public override void _Ready()
         {
             SpawnFunction = new Callable(this, nameof(SpawnPlayerFunction));
-            AddToGroup(Global.PlayerGroupName);
         }
 
         Node SpawnPlayerFunction(Variant data)
@@ -21,6 +20,7 @@ namespace MC
             player.Id = id;
             player.Name = id.ToString();
             player.SetMultiplayerAuthority(id);
+            player.AddToGroup(Global.PlayerGroupName);
 
             return player;
         }

@@ -37,14 +37,23 @@ namespace MC
         public static readonly int[] UVIndices = new int[] { 0, 1, 2, 3 };
     }
 
+    public enum BlockFace
+    {
+        Unknown,
+        Top,
+        Bottom,
+        Left,
+        Right,
+        Front,
+        Back
+    }
+
     public partial class BlockManager : Node
     {
         public StandardMaterial3D Material { get; private set; }
 
         Dictionary<BlockType, Block> _blockDict = new();
         Dictionary<Texture2D, Vector2> _textureUVOffsetDict = new();
-        Dictionary<BlockType, bool> _transparentDict = new();
-        Dictionary<BlockType, Outlook> _outlookDict = new();
 
         const int _atlasWidth = 4;
         int _atlasHeight = 0;
@@ -57,6 +66,15 @@ namespace MC
 
         [Export] ImageTexture _atlasTexture;
 
+        Dictionary<Vector3I, BlockFace> _blockFaceDict = new Dictionary<Vector3I, BlockFace>
+        {
+            {Vector3I.Up, BlockFace.Top},
+            {Vector3I.Down, BlockFace.Bottom},
+            {Vector3I.Left, BlockFace.Left},
+            {Vector3I.Right, BlockFace.Right},
+            {Vector3I.Forward, BlockFace.Front},
+            {Vector3I.Back, BlockFace.Back}
+        };
         
         public override void _Ready()
         {
@@ -74,9 +92,9 @@ namespace MC
 
         public bool IsTransparent(BlockType type)
         {
-            if (!_transparentDict.TryGetValue(type, out var value))
+            if (!_blockDict.TryGetValue(type, out var block))
                 return true;
-            return value;
+            return block.IsTransparent;
         }
 
         public void DrawBlock(BlockType blockType, Vector3I blockLocalPos, Vector3I blockWorldPos, SurfaceTool surfaceTool, BlockTypeGetter typeGetter)
@@ -96,6 +114,23 @@ namespace MC
             }
         }
 
+        public bool IsBreakable(BlockType blockType)
+        {
+            return true;
+        }
+
+        public bool IsPlacable(BlockType hitBlockType, BlockType newBlockType, Vector3I hitNormal)
+        {
+            return true;
+        }
+
+        public BlockFace NormalToBlockFace(Vector3I normal)
+        {
+            if (!_blockFaceDict.TryGetValue(normal, out BlockFace blockFace))
+                return BlockFace.Unknown;
+            return blockFace;
+        }
+
         void LoadBlocks()
         {
             foreach (BlockType blockType in Enum.GetValues(typeof(BlockType)))
@@ -106,8 +141,6 @@ namespace MC
                 GD.Print($"Load {blockType}");
 
                 _blockDict[blockType] = block;
-                _transparentDict[blockType] = block.IsTransparent;
-                _outlookDict[blockType] = block.Outlook;
             }
         }
 
