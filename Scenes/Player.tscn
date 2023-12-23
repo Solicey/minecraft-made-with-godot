@@ -1,9 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://cgnp7juxesnfe"]
 
 [ext_resource type="Script" path="res://Scripts/Player.cs" id="1_p3810"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_opwo0"]
-size = Vector3(0.45, 0.45, 0.45)
+[ext_resource type="PackedScene" uid="uid://b0snmeo4wa7no" path="res://Scenes/AnimatedCharacter.tscn" id="2_6tr2t"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rfpb4"]
 radius = 0.4
@@ -23,29 +21,29 @@ properties/0/spawn = true
 properties/0/replication_mode = 2
 properties/1/path = NodePath(".:position")
 properties/1/spawn = true
-properties/1/replication_mode = 1
+properties/1/replication_mode = 2
 properties/2/path = NodePath(".:rotation")
 properties/2/spawn = true
-properties/2/replication_mode = 1
+properties/2/replication_mode = 2
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_camera", "_rayCast", "_head", "_selectionBox")]
+[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_camera", "_rayCast", "_head", "_selectionBox", "_animatedCharacter")]
 collision_layer = 2
 script = ExtResource("1_p3810")
 _camera = NodePath("Head/Camera3D")
 _rayCast = NodePath("Head/Camera3D/RayCast3D")
 _head = NodePath("Head")
 _selectionBox = NodePath("SelectionBox")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("BoxMesh_opwo0")
+_animatedCharacter = NodePath("AnimatedCharacter")
+_jumpHeight = 1.2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_rfpb4")
 
 [node name="Head" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
 
 [node name="Camera3D" type="Camera3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19408, 0)
 
 [node name="RayCast3D" type="RayCast3D" parent="Head/Camera3D"]
 target_position = Vector3(0, 0, -4)
@@ -57,3 +55,6 @@ mesh = SubResource("BoxMesh_ynhyv")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_pdxt8")
+
+[node name="AnimatedCharacter" parent="." instance=ExtResource("2_6tr2t")]
+transform = Transform3D(-9.61651e-09, 0, 0.22, 0, 0.22, 0, -0.22, 0, -9.61651e-09, 0, -0.9, 0)

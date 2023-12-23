@@ -37,12 +37,14 @@ namespace MC
         [Export] RayCast3D _rayCast;
         [Export] Node3D _head;
         [Export] MeshInstance3D _selectionBox;
+        [Export] AnimatedCharacter _animatedCharacter;
 
         [Export] float _speed = 4f;
         [Export] float _acceleration = 100f;
         [Export] float _jumpHeight = 1f;
         [Export] float _camSensitivity = 0.01f;
         [Export] float _playerHeight = 1.8f;
+        [Export] float _headPitchMaxAngleRadian = 1.5f;
 
         bool _jumping = false;
         Vector2 _moveDirection = new();
@@ -58,6 +60,28 @@ namespace MC
         [Export] float _placeBlockInterval = 0.2f;
         Timer _breakBlockTimer = null;
         Timer _placeBlockTimer = null;
+
+        Vector3 HeadRotation
+        {
+            get { return _head.Rotation; }
+            set
+            {
+                _head.Rotation = value;
+                _animatedCharacter.HeadGlobalLookAtVector = _head.GlobalTransform.Basis * Vector3.Forward;
+            }
+        }
+
+        Vector3 WalkDirection
+        {
+            get { return _walkDirection; }
+            set
+            {
+                _walkDirection = value;
+                _animatedCharacter.StartWalkDirectionChangeAnimation(value);
+            }
+        }
+        Vector3 _walkDirection = new();
+
 
         public override void _Ready()
         {
@@ -94,6 +118,8 @@ namespace MC
             _placeBlockTimer = new Timer();
             AddChild(_placeBlockTimer);
             _placeBlockTimer.OneShot = true;
+
+            _animatedCharacter.Visible = false;
         }
 
         public override void _Process(double delta)
@@ -182,17 +208,16 @@ namespace MC
             if (@event is InputEventMouseMotion mouseMotion)
             {
                 _lookDirection = mouseMotion.Relative * _camSensitivity;
-                var headRotation = _head.Rotation;
+                var headRotation = HeadRotation;
                 headRotation.Y -= _lookDirection.X;
-                headRotation.X = Mathf.Clamp(headRotation.X - _lookDirection.Y, -1.5f, 1.5f);
-                _head.Rotation = headRotation;
+                headRotation.X = Mathf.Clamp(headRotation.X - _lookDirection.Y, -_headPitchMaxAngleRadian, _headPitchMaxAngleRadian);
+                HeadRotation = headRotation;
             }
 
             if (Input.IsActionPressed("Jump"))
                 _jumping = true;
             _moveDirection = Input.GetVector("Left", "Right", "Forward", "Back");
-
-            
+            _animatedCharacter.StartIdleWalkBlendAnimation(_moveDirection.Length());
         }
 
         bool InGame()
@@ -217,8 +242,8 @@ namespace MC
         Vector3 Walk(float delta)
         {
             var forward = _head.GlobalTransform.Basis * new Vector3(_moveDirection.X, 0, _moveDirection.Y);
-            var walkDirection = new Vector3(forward.X, 0, forward.Z).Normalized();
-            _walkVelocity = _walkVelocity.MoveToward(walkDirection * _speed * _moveDirection.Length(), _acceleration * delta);
+            WalkDirection = new Vector3(forward.X, 0, forward.Z).Normalized();
+            _walkVelocity = _walkVelocity.MoveToward(WalkDirection * _speed * _moveDirection.Length(), _acceleration * delta);
             return _walkVelocity;
         }
 

@@ -2,6 +2,8 @@ res://Scenes/MainScene.tscn
 res://Scenes/UiManager.tscn
 res://Scenes/Player.tscn
 res://Scenes/World.tscn
+res://Scenes/AnimatedCharacter.tscn
+res://Scripts/AnimatedCharacter.cs
 res://Scripts/Block.cs
 res://Scripts/BlockManager.cs
 res://Scripts/Chunk.cs

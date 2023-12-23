@@ -1,4 +1,6 @@
 MeshInstance3D
+MultiplayerSynchronizer
+AnimationTree
 DirectionalLight3D
 RayCast3D
 Camera3D
@@ -7,8 +9,6 @@ CollisionShape3D
 Node
 WorldEnvironment
 StaticBody3D
-MultiplayerSynchronizer
 Button
 Label
 Panel
-TextEdit
