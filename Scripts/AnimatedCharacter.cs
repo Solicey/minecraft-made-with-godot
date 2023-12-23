@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Reflection.Metadata;
 
 namespace MC
 {
@@ -11,6 +12,7 @@ namespace MC
         [Export] string _rootBoneName = "Root";
         [Export] string _headBoneName = "Neck";
         [Export] float _idleWalkBlendDuration = 0.3f;
+        [Export] float _walkDirectionChangeSpeed = 0.3f;
 
         int _headBoneId = -1;
         int _rootBoneId = -1;
@@ -29,17 +31,6 @@ namespace MC
         }
         Quaternion _headQuaternion;
 
-        [Export] public float SkeletonYawAngle
-        {
-            get { return _skeletonYawAngle; }
-            set
-            {
-                _skeletonYawAngle = value;
-                _skeleton.Rotate(Vector3.Up, value);
-            }
-        }
-        float _skeletonYawAngle;
-
         [Export] public Vector3 HeadGlobalLookAtVector
         {
             get { return _headGlobalLookAtVector; }
@@ -51,15 +42,16 @@ namespace MC
                 //GD.Print($"local vector: {localVector}");
 
                 _headLocalForwardVector = (new Vector3(localVector.X, 0f, localVector.Z)).Normalized();
-                var dot = Vector2.Right.Dot((new Vector2(localVector.X, localVector.Z)).Normalized());
+
+                //var dot = Vector2.Right.Dot((new Vector2(localVector.X, localVector.Z)).Normalized());
+                var angle = GetAngleToRightVector(_headLocalForwardVector);
 
                 //GD.Print($"dot: {dot}");
 
-                if (dot < 0)
+                var delta = Mathf.Abs(angle) - Mathf.Pi / 2f;
+                if (delta >= 0)
                 {
-                    var theta = Mathf.Acos(dot);
-                    var rotDir = (localVector.Z > 0 ? -1 : 1);
-                    SkeletonYawAngle = (theta - Mathf.Pi / 2f) * rotDir;
+                    _skeleton.RotateY(delta * Mathf.Sign(angle));
                 }
 
                 HeadQuaternion = (new Quaternion(Vector3.Right, localVector)).Normalized();
@@ -80,19 +72,17 @@ namespace MC
         float _idleWalkBlendParam;
         float _idleWalkBlendParamFinalValue = -1f;
 
-
-        [Export]
-        public Vector3 WalkDirection
+        float WalkDirectionValue
         {
-            get { return _walkDirection; }
+            get { return _walkDirectionValue; }
             set
             {
-                _walkDirection = value;
-
+                _skeleton.RotateY(value - _walkDirectionValue);
+                _walkDirectionValue = value;
+                HeadGlobalLookAtVector = _headGlobalLookAtVector;
             }
         }
-        Vector3 _walkDirection = new();
-        Vector3 _walkDirectionFinalValue = new();
+        float _walkDirectionValue;
 
         public override void _Ready()
         {
@@ -108,7 +98,7 @@ namespace MC
             _idleWalkTween?.Kill();
             _idleWalkTween = CreateTween();
             _idleWalkTween.TweenProperty(this, nameof(IdleWalkBlendParam), finalValue, _idleWalkBlendDuration * Mathf.Abs(IdleWalkBlendParam - finalValue));
-            _idleWalkTween.TweenCallback(Callable.From(() => { _idleWalkBlendParamFinalValue = -1f; }));
+            //_idleWalkTween.TweenCallback(Callable.From(() => { _idleWalkBlendParamFinalValue = -1f; }));
 
             _idleWalkBlendParamFinalValue = finalValue;
         }
@@ -118,15 +108,31 @@ namespace MC
             var finalLocalDirection = (_skeleton.GlobalTransform.Basis.Inverse() * finalGlobalDirection).Normalized();
             if (_headLocalForwardVector.Dot(finalLocalDirection) < 0)
                 finalLocalDirection = -finalLocalDirection;
-
-            if (finalLocalDirection == _walkDirectionFinalValue)
-                return;
+            var finalValue = GetAngleToRightVector(finalLocalDirection);
 
             _walkDirectionTween?.Kill();
             _walkDirectionTween = CreateTween();
-            //_walkDirectionTween.TweenProperty(this, nameof());
+            //float lastTimeValue = 0f;
+            _walkDirectionValue = 0f;
+            float duration = _walkDirectionChangeSpeed * Mathf.Abs(finalValue);
+            GD.Print($"walk final value: {finalValue}, duration: {duration}");
+            _walkDirectionTween.TweenProperty(this, nameof(WalkDirectionValue), finalValue, duration);
+            /*TweenMethod(Callable.From((float value) =>
+            {
+                _skeleton.RotateY(value - lastTimeValue);
+                GD.Print($"walk value: {value}");
+                GD.Print($"walk delta: {value - lastTimeValue}");
+                lastTimeValue = value;
+                HeadGlobalLookAtVector = _headGlobalLookAtVector;
+            }), 0, finalValue, duration);*/
+                
+            //TweenProperty(this, nameof(SkeletonYawAngle), finalValue, _walkDirectionChangeSpeed * Mathf.Abs(SkeletonYawAngle - finalValue));
         }
 
+        float GetAngleToRightVector(Vector3 vector)
+        {
+            return Vector3.Right.SignedAngleTo(vector, Vector3.Up);
+        }
     }
 
 }

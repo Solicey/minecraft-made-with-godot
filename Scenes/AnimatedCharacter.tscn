@@ -112,8 +112,8 @@ _animationTree = NodePath("AnimationTree")
 [node name="Skeleton3D" parent="Armature" index="0"]
 bones/0/rotation = Quaternion(0.000474975, 0.000474975, 0.000474975, 1.00048)
 bones/1/rotation = Quaternion(0.000474975, 0.000474975, 0.000474975, 1.00048)
-bones/2/rotation = Quaternion(0.999959, -0.00903797, -4.37096e-08, -1.51243e-09)
-bones/3/rotation = Quaternion(0.999959, 0.00903797, -4.37096e-08, 1.51243e-09)
+bones/2/rotation = Quaternion(0.999781, -0.0209139, -4.37018e-08, -9.92977e-10)
+bones/3/rotation = Quaternion(0.999781, 0.0209139, -4.37018e-08, 9.92977e-10)
 
 [node name="AnimationTree" type="AnimationTree" parent="." index="2"]
 libraries = {

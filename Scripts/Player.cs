@@ -76,6 +76,7 @@ namespace MC
             get { return _walkDirection; }
             set
             {
+                if (_walkDirection == value) return;
                 _walkDirection = value;
                 _animatedCharacter.StartWalkDirectionChangeAnimation(value);
             }
