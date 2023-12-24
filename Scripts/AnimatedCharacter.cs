@@ -39,14 +39,9 @@ namespace MC
                 _headGlobalLookAtVector = value;
                 var localVector = (_skeleton.GlobalTransform.Basis.Inverse() * value).Normalized();
 
-                //GD.Print($"local vector: {localVector}");
-
                 _headLocalForwardVector = (new Vector3(localVector.X, 0f, localVector.Z)).Normalized();
 
-                //var dot = Vector2.Right.Dot((new Vector2(localVector.X, localVector.Z)).Normalized());
                 var angle = GetAngleToRightVector(_headLocalForwardVector);
-
-                //GD.Print($"dot: {dot}");
 
                 var delta = Mathf.Abs(angle) - Mathf.Pi / 2f;
                 if (delta >= 0)
@@ -90,6 +85,19 @@ namespace MC
             _rootBoneId = _skeleton.FindBone(_rootBoneName);
         }
 
+        public void SetInvisible()
+        {
+            var meshs = _skeleton.GetChildren();
+            foreach (var mesh in meshs)
+            {
+                if (mesh is MeshInstance3D mesh3d)
+                {
+                    mesh3d.SetLayerMaskValue(Global.CameraVisibleLayer, false);
+                    mesh3d.SetLayerMaskValue(Global.CameraNotVisibleButCastShadowLayer, true);
+                }
+            }
+        }
+
         public void StartIdleWalkBlendAnimation(float finalValue)
         {
             if (finalValue == _idleWalkBlendParamFinalValue)
@@ -98,7 +106,6 @@ namespace MC
             _idleWalkTween?.Kill();
             _idleWalkTween = CreateTween();
             _idleWalkTween.TweenProperty(this, nameof(IdleWalkBlendParam), finalValue, _idleWalkBlendDuration * Mathf.Abs(IdleWalkBlendParam - finalValue));
-            //_idleWalkTween.TweenCallback(Callable.From(() => { _idleWalkBlendParamFinalValue = -1f; }));
 
             _idleWalkBlendParamFinalValue = finalValue;
         }
@@ -112,21 +119,9 @@ namespace MC
 
             _walkDirectionTween?.Kill();
             _walkDirectionTween = CreateTween();
-            //float lastTimeValue = 0f;
             _walkDirectionValue = 0f;
             float duration = _walkDirectionChangeSpeed * Mathf.Abs(finalValue);
-            GD.Print($"walk final value: {finalValue}, duration: {duration}");
             _walkDirectionTween.TweenProperty(this, nameof(WalkDirectionValue), finalValue, duration);
-            /*TweenMethod(Callable.From((float value) =>
-            {
-                _skeleton.RotateY(value - lastTimeValue);
-                GD.Print($"walk value: {value}");
-                GD.Print($"walk delta: {value - lastTimeValue}");
-                lastTimeValue = value;
-                HeadGlobalLookAtVector = _headGlobalLookAtVector;
-            }), 0, finalValue, duration);*/
-                
-            //TweenProperty(this, nameof(SkeletonYawAngle), finalValue, _walkDirectionChangeSpeed * Mathf.Abs(SkeletonYawAngle - finalValue));
         }
 
         float GetAngleToRightVector(Vector3 vector)

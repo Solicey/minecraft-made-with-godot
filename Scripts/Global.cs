@@ -30,6 +30,10 @@ namespace MC
 
         public static int FastChunkUpdateMaxManhattanDistance { get; private set; } = 2;
 
+        public static int CameraVisibleLayer { get; private set; } = 1;
+
+        public static int CameraNotVisibleButCastShadowLayer { get; private set; } = 2;
+
         public GameStartInfo GameStartInfo
         {
             get {  return _gameStartInfo; }

@@ -120,7 +120,8 @@ namespace MC
             AddChild(_placeBlockTimer);
             _placeBlockTimer.OneShot = true;
 
-            _animatedCharacter.Visible = false;
+            _animatedCharacter.SetInvisible();
+            HeadRotation = new Vector3();
         }
 
         public override void _Process(double delta)

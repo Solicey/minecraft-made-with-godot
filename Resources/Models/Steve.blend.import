@@ -3629,14 +3629,6 @@ _subresources={
 "slice_99/start_frame": 0,
 "slices/amount": 0
 }
-},
-"nodes": {
-"PATH:Camera": {
-"import/skip_import": true
-},
-"PATH:Light": {
-"import/skip_import": true
-}
 }
 }
 gltf/naming_version=1
