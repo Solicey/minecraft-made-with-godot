@@ -10,7 +10,8 @@ namespace MC
         Stone,
         Grass,
         ShortGrass,
-
+        Dandelion,
+        Rose
     }
 
     public enum Outlook

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Block" load_steps=3 format=3 uid="uid://derhvk0r0t8d8"]
+
+[ext_resource type="Script" path="res://Scripts/Block/Block.cs" id="1_t6knx"]
+[ext_resource type="Texture2D" uid="uid://calocyowr4dgq" path="res://Resources/Textures/flower_dandelion.png" id="1_unn7t"]
+
+[resource]
+script = ExtResource("1_t6knx")
+Type = 5
+Outlook = 1
+MainTexture = ExtResource("1_unn7t")
+IsTransparent = true
+MaterialType = 1
+ColliderType = 1
+UseCustomCollider = true
+CustomColliderOutlook = 0
+CustomColliderScale = Vector3(1, 1, 1)

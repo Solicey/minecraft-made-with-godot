@@ -8,7 +8,7 @@ noise_type = 3
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_i53f3"]
 noise_type = 0
-frequency = 0.3
+frequency = 0.5
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6wmot"]
 

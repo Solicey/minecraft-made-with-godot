@@ -177,9 +177,13 @@ namespace MC
                     for (int y = groundHeight; y < shape.Y; y++)
                         blockArray[x, y, z] = BlockType.Air;
 
-                    bool spawnShortGrass = ((_plantNoise.GetNoise2D(blockWorldPos.X, blockWorldPos.Y) + 1f) / 2f) > 0.7f;
-                    if (spawnShortGrass)
+                    float plantValue = (_plantNoise.GetNoise2D(blockWorldPos.X, blockWorldPos.Y) + 1f) / 2f;
+                    if (plantValue > 0.7f)
                         blockArray[x, groundHeight, z] = BlockType.ShortGrass;
+                    else if (plantValue < 0.2f)
+                        blockArray[x, groundHeight, z] = BlockType.Dandelion;
+                    else if (plantValue < 0.25f)
+                        blockArray[x, groundHeight, z] = BlockType.Rose;
                 }
             }
         }
