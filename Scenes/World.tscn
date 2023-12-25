@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://c2migx3psh2uh"]
 
-[ext_resource type="Script" path="res://Scripts/World.cs" id="1_3y7hb"]
+[ext_resource type="Script" path="res://Scripts/World/World.cs" id="1_3y7hb"]
 [ext_resource type="PackedScene" uid="uid://dhjxscuu0ix61" path="res://Scenes/Chunk.tscn" id="2_tnju0"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_vsmhn"]

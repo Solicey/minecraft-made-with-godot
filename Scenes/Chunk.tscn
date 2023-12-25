@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dhjxscuu0ix61"]
 
-[ext_resource type="Script" path="res://Scripts/Chunk.cs" id="1_sjw8k"]
+[ext_resource type="Script" path="res://Scripts/World/Chunk.cs" id="1_sjw8k"]
 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_mo6y7"]
 

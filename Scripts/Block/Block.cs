@@ -18,6 +18,12 @@ namespace MC
         Stair
     }
 
+    public enum TransparentType
+    {
+        AlphaClip,
+        Blend
+    }
+
     [GlobalClass]
     public partial class Block : Resource
     {
@@ -34,6 +40,14 @@ namespace MC
         public Texture2D[] Textures => new Texture2D[] { MainTexture, TopTexture, BottomTexture };
 
         [Export] public bool IsTransparent { get; set; }
+
+        [Export] public TransparentType TransparentType { get; set; }
+
+        [Export] public bool HasCollider { get; set; }
+
+        // 如果没有collider，需要定义triggerbox的形状和位置
+        [Export] public Vector3 TriggerBoxScale { get; set; }
+        [Export] public bool IsTriggerBoxStaysAtCenter { get; set; }
 
         public Block() { }
     }

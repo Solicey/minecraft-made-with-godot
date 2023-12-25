@@ -1,10 +1,10 @@
-[gd_scene load_steps=12 format=3 uid="uid://b0snmeo4wa7no"]
+[gd_scene load_steps=16 format=3 uid="uid://b0snmeo4wa7no"]
 
 [ext_resource type="PackedScene" uid="uid://cwr4ddns1ayev" path="res://Resources/Models/Steve.blend" id="1_bfyss"]
-[ext_resource type="Script" path="res://Scripts/AnimatedCharacter.cs" id="2_elyrg"]
+[ext_resource type="Script" path="res://Scripts/Player/AnimatedCharacter.cs" id="2_elyrg"]
 [ext_resource type="Material" uid="uid://h1y746fpdb7u" path="res://Materials/Steve.tres" id="3_xd4iq"]
 
-[sub_resource type="Animation" id="Animation_u7wia"]
+[sub_resource type="Animation" id="Animation_v20ht"]
 resource_name = "Idle"
 length = 4.0
 loop_mode = 1
@@ -37,7 +37,39 @@ tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = PackedFloat32Array(0, 1, 1, 0, -7.54979e-08, 0)
 
-[sub_resource type="Animation" id="Animation_7vsd5"]
+[sub_resource type="Animation" id="Animation_15uon"]
+resource_name = "Interact"
+length = 0.4
+tracks/0/type = "rotation_3d"
+tracks/0/imported = true
+tracks/0/enabled = true
+tracks/0/path = NodePath("Armature/Skeleton3D:Arm.R")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = PackedFloat32Array(0, 1, 1, 0, -7.54979e-08, 0, 0.0333333, 1, 1, 0, -7.54979e-08, 0, 0.0666667, 1, 0.997247, 0.051068, 0.0515663, 0.0152061, 0.1, 1, 0.97613, 0.175826, 0.119665, 0.0439964, 0.133333, 1, 0.92962, 0.332634, 0.144153, 0.0661947, 0.166667, 1, 0.867743, 0.466333, 0.153113, 0.0781839, 0.2, 1, 0.835255, 0.521516, 0.154005, 0.081568, 0.233333, 1, 0.858341, 0.50606, 0.0724211, 0.0436851, 0.266667, 1, -0.892728, -0.442376, 0.0810453, 0.0277735, 0.3, 1, -0.927128, -0.331712, 0.161634, 0.0653872, 0.333333, 1, -0.973146, -0.189804, 0.120731, 0.0488405, 0.366667, 1, -0.997299, -0.0576428, 0.0421873, 0.0170664, 0.4, 1, 1, 0, -7.54979e-08, 0)
+tracks/1/type = "rotation_3d"
+tracks/1/imported = true
+tracks/1/enabled = true
+tracks/1/path = NodePath("Armature/Skeleton3D:Arm.L")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = PackedFloat32Array(0, 1, 1, 0, -7.54979e-08, 0)
+tracks/2/type = "rotation_3d"
+tracks/2/imported = true
+tracks/2/enabled = true
+tracks/2/path = NodePath("Armature/Skeleton3D:Leg.R")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = PackedFloat32Array(0, 1, 1, 0, -7.54979e-08, 0)
+tracks/3/type = "rotation_3d"
+tracks/3/imported = true
+tracks/3/enabled = true
+tracks/3/path = NodePath("Armature/Skeleton3D:Leg.L")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = PackedFloat32Array(0, 1, 1, 0, -7.54979e-08, 0)
+
+[sub_resource type="Animation" id="Animation_4ncad"]
 resource_name = "Walking"
 length = 0.533333
 loop_mode = 1
@@ -70,10 +102,11 @@ tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = PackedFloat32Array(0, 1, 0.92388, 0.382683, -6.9751e-08, 4.56346e-09, 0.0333333, 1, 0.92388, 0.382683, -6.9751e-08, 4.56346e-09, 0.0666667, 1, 0.938373, 0.345625, -7.08452e-08, 7.8861e-09, 0.1, 1, 0.970148, 0.242515, -7.32441e-08, 1.68213e-08, 0.133333, 1, 0.996137, 0.0878158, -7.52062e-08, 2.94419e-08, 0.166667, 1, 0.996137, -0.0878156, -7.52062e-08, 4.27017e-08, 0.2, 1, 0.970148, -0.242515, -7.32441e-08, 5.34401e-08, 0.233333, 1, 0.938373, -0.345625, -7.08452e-08, 6.00741e-08, 0.266667, 1, -0.92388, 0.382683, 6.9751e-08, 4.56345e-09, 0.3, 1, -0.935212, 0.354087, 7.06066e-08, 7.13277e-09, 0.333333, 1, -0.961763, 0.273883, 7.26111e-08, 1.41495e-08, 0.366667, 1, -0.988631, 0.150365, 7.46395e-08, 2.44478e-08, 0.433333, 1, -0.988631, -0.150365, 7.46395e-08, 4.71522e-08, 0.466667, 1, -0.961763, -0.273883, 7.26111e-08, 5.55047e-08, 0.5, 1, -0.935212, -0.354087, 7.06066e-08, 6.05985e-08, 0.533333, 1, 0.92388, 0.382683, -6.9751e-08, 4.56346e-09)
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_w7dia"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_3d6ul"]
 _data = {
-"Idle": SubResource("Animation_u7wia"),
-"Walking": SubResource("Animation_7vsd5")
+"Idle": SubResource("Animation_v20ht"),
+"Interact": SubResource("Animation_15uon"),
+"Walking": SubResource("Animation_4ncad")
 }
 
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_frsoc"]
@@ -81,18 +114,36 @@ animation = &"Idle"
 
 [sub_resource type="AnimationNodeBlend2" id="AnimationNodeBlend2_3e43i"]
 
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_fydqj"]
+animation = &"Interact"
+
+[sub_resource type="AnimationNodeOneShot" id="AnimationNodeOneShot_mg8w5"]
+filter_enabled = true
+filters = ["Armature/Skeleton3D:Arm.R"]
+fadein_time = 0.05
+fadeout_time = 0.05
+
+[sub_resource type="AnimationNodeTimeScale" id="AnimationNodeTimeScale_p0qrs"]
+
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_mqhot"]
 animation = &"Walking"
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_ennpy"]
+graph_offset = Vector2(-191.716, -85.9009)
 nodes/Idle/node = SubResource("AnimationNodeAnimation_frsoc")
 nodes/Idle/position = Vector2(-80, 40)
 nodes/IdleWalkBlend/node = SubResource("AnimationNodeBlend2_3e43i")
 nodes/IdleWalkBlend/position = Vector2(160, 100)
+nodes/Interact/node = SubResource("AnimationNodeAnimation_fydqj")
+nodes/Interact/position = Vector2(-20, 440)
+nodes/InteractOneShot/node = SubResource("AnimationNodeOneShot_mg8w5")
+nodes/InteractOneShot/position = Vector2(400, 140)
+nodes/TimeScale/node = SubResource("AnimationNodeTimeScale_p0qrs")
+nodes/TimeScale/position = Vector2(200, 440)
 nodes/Walking/node = SubResource("AnimationNodeAnimation_mqhot")
 nodes/Walking/position = Vector2(-100, 260)
-nodes/output/position = Vector2(440, 100)
-node_connections = [&"IdleWalkBlend", 0, &"Idle", &"IdleWalkBlend", 1, &"Walking", &"output", 0, &"IdleWalkBlend"]
+nodes/output/position = Vector2(700, 140)
+node_connections = [&"IdleWalkBlend", 0, &"Idle", &"IdleWalkBlend", 1, &"Walking", &"InteractOneShot", 0, &"IdleWalkBlend", &"InteractOneShot", 1, &"TimeScale", &"TimeScale", 0, &"Interact", &"output", 0, &"InteractOneShot"]
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_7mdas"]
 properties/0/path = NodePath(".:HeadQuaternion")
@@ -104,6 +155,9 @@ properties/1/replication_mode = 2
 properties/2/path = NodePath(".:IdleWalkBlendParam")
 properties/2/spawn = true
 properties/2/replication_mode = 2
+properties/3/path = NodePath(".:InteractCount")
+properties/3/spawn = true
+properties/3/replication_mode = 2
 
 [node name="AnimatedCharacter" node_paths=PackedStringArray("_skeleton", "_animationTree") instance=ExtResource("1_bfyss")]
 script = ExtResource("2_elyrg")
@@ -111,8 +165,9 @@ _skeleton = NodePath("Armature/Skeleton3D")
 _animationTree = NodePath("AnimationTree")
 
 [node name="Skeleton3D" parent="Armature" index="0"]
-bones/2/rotation = Quaternion(0.999777, 0.0211328, -7.5481e-08, 3.11662e-10)
-bones/3/rotation = Quaternion(0.999777, -0.0211328, -7.5481e-08, -3.11662e-10)
+unique_name_in_owner = true
+bones/2/rotation = Quaternion(0.999771, -0.0214007, -7.54806e-08, 3.52284e-09)
+bones/3/rotation = Quaternion(0.999771, 0.0214007, -7.54806e-08, -3.52284e-09)
 
 [node name="Head" parent="Armature/Skeleton3D" index="0"]
 surface_material_override/0 = ExtResource("3_xd4iq")
@@ -132,13 +187,22 @@ surface_material_override/0 = ExtResource("3_xd4iq")
 [node name="Torso" parent="Armature/Skeleton3D" index="5"]
 surface_material_override/0 = ExtResource("3_xd4iq")
 
+[node name="AnimationPlayer" parent="." index="1"]
+playback_default_blend_time = 0.05
+
 [node name="AnimationTree" type="AnimationTree" parent="." index="2"]
+unique_name_in_owner = true
+root_node = NodePath("%AnimationTree/..")
 libraries = {
-"": SubResource("AnimationLibrary_w7dia")
+"": SubResource("AnimationLibrary_3d6ul")
 }
 tree_root = SubResource("AnimationNodeBlendTree_ennpy")
 anim_player = NodePath("../AnimationPlayer")
 parameters/IdleWalkBlend/blend_amount = 0.0
+parameters/InteractOneShot/active = false
+parameters/InteractOneShot/internal_active = false
+parameters/InteractOneShot/request = 0
+parameters/TimeScale/scale = 1.5
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." index="3"]
 replication_config = SubResource("SceneReplicationConfig_7mdas")

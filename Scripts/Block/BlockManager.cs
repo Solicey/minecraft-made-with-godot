@@ -6,37 +6,6 @@ using System.Reflection;
 
 namespace MC
 {
-    public static class Cubic
-    {
-        public static readonly Vector3[] Vertices = new Vector3[]
-        {
-            new Vector3I(0, 0, 0),
-            new Vector3I(1, 0, 0),
-            new Vector3I(0, 1, 0),
-            new Vector3I(1, 1, 0),
-            new Vector3I(0, 0, 1),
-            new Vector3I(1, 0, 1),
-            new Vector3I(0, 1, 1),
-            new Vector3I(1, 1, 1)
-        };
-
-        public static readonly Vector2[] UVCoords = new Vector2[]
-        {
-            new Vector2(0, 0),
-            new Vector2(0, 1),
-            new Vector2(1, 1),
-            new Vector2(1, 0)
-        };
-
-        public static readonly int[] Top = new int[] { 2, 3, 7, 6 };
-        public static readonly int[] Bottom = new int[] { 0, 4, 5, 1 };
-        public static readonly int[] Left = new int[] { 6, 4, 0, 2 };
-        public static readonly int[] Right = new int[] { 3, 1, 5, 7 };
-        public static readonly int[] Back = new int[] { 7, 5, 4, 6 };
-        public static readonly int[] Front = new int[] { 2, 0, 1, 3 };
-        public static readonly int[] UVIndices = new int[] { 0, 1, 2, 3 };
-    }
-
     public enum BlockFace
     {
         Unknown,
@@ -47,6 +16,10 @@ namespace MC
         Front,
         Back
     }
+
+    public delegate void RectDrawer(Vector3[] vertices, int[] indices, Vector2[] uvs, int[] uvIndices, Vector3 offset, Vector3 scale, Texture2D texture, SurfaceTool surfaceTool);
+
+    public delegate Block BlockGetter(BlockType type);
 
     public partial class BlockManager : Node
     {
@@ -75,18 +48,21 @@ namespace MC
             {Vector3I.Forward, BlockFace.Front},
             {Vector3I.Back, BlockFace.Back}
         };
-        
+
+        Dictionary<Outlook, IBlockOutlook> _outlookDict = new();
+
         public override void _Ready()
         {
             LoadBlocks();
             DrawAtlas();
             CreateMaterial();
+            FillOutlookDict();
         }
 
         public Block GetBlock(BlockType type)
         {
             if (!_blockDict.TryGetValue(type, out var block))
-                return null;
+                return _blockDict.FirstOrDefault().Value;
             return block;
         }
 
@@ -97,7 +73,7 @@ namespace MC
             return block.IsTransparent;
         }
 
-        public void DrawBlock(BlockType blockType, Vector3I blockLocalPos, Vector3I blockWorldPos, SurfaceTool surfaceTool, BlockTypeGetter typeGetter)
+        public void DrawBlock(BlockType blockType, Vector3I blockLocalPos, Vector3I blockWorldPos, Vector3 offset, Vector3 scale, SurfaceTool surfaceTool, BlockTypeGetter typeGetter)
         {
             if (blockType == BlockType.Air)
                 return;
@@ -106,12 +82,10 @@ namespace MC
             if (block == null)
                 return;
 
-            switch (block.Outlook)
-            {
-                case Outlook.Cubic:
-                    DrawCubic(blockLocalPos, blockWorldPos, block, surfaceTool, typeGetter);
-                    break;
-            }
+            if (!_outlookDict.TryGetValue(block.Outlook, out var outlook))
+                return;
+
+            outlook.Draw(blockLocalPos, blockWorldPos, offset, scale, block, surfaceTool, typeGetter, GetBlock, DrawRect);
         }
 
         public bool IsBreakable(BlockType blockType)
@@ -179,42 +153,20 @@ namespace MC
             Material = new StandardMaterial3D()
             {
                 AlbedoTexture = _atlasTexture,
-                TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest
+                TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest,
+                SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled
             };
         }
 
-        void DrawCubic(Vector3I blockLocalPos, Vector3I blockWorldPos, Block block, SurfaceTool surfaceTool, BlockTypeGetter typeGetter)
-        {
-            bool isTransparent = block.IsTransparent;
-
-            if (isTransparent || IsTransparent(typeGetter(blockWorldPos + Vector3I.Up)))
-                DrawRect(Cubic.Vertices, Cubic.Top, Cubic.UVCoords, Cubic.UVIndices, blockLocalPos, block.TopTexture ?? block.MainTexture, surfaceTool);
-
-            if (isTransparent || IsTransparent(typeGetter(blockWorldPos + Vector3I.Down)))
-                DrawRect(Cubic.Vertices, Cubic.Bottom, Cubic.UVCoords, Cubic.UVIndices, blockLocalPos, block.BottomTexture ?? block.MainTexture, surfaceTool);
-
-            if (isTransparent || IsTransparent(typeGetter(blockWorldPos + Vector3I.Left)))
-                DrawRect(Cubic.Vertices, Cubic.Left, Cubic.UVCoords, Cubic.UVIndices, blockLocalPos, block.MainTexture, surfaceTool);
-
-            if (isTransparent || IsTransparent(typeGetter(blockWorldPos + Vector3I.Right)))
-                DrawRect(Cubic.Vertices, Cubic.Right, Cubic.UVCoords, Cubic.UVIndices, blockLocalPos, block.MainTexture, surfaceTool);
-
-            if (isTransparent || IsTransparent(typeGetter(blockWorldPos + Vector3I.Forward)))
-                DrawRect(Cubic.Vertices, Cubic.Front, Cubic.UVCoords, Cubic.UVIndices, blockLocalPos, block.MainTexture, surfaceTool);
-
-            if (isTransparent || IsTransparent(typeGetter(blockWorldPos + Vector3I.Back)))
-                DrawRect(Cubic.Vertices, Cubic.Back, Cubic.UVCoords, Cubic.UVIndices, blockLocalPos, block.MainTexture, surfaceTool);
-        }
-
-        void DrawRect(Vector3[] vertices, int[] indices, Vector2[] uvs, int[] uvIndices, Vector3I blockLocalPos, Texture2D texture, SurfaceTool surfaceTool)
+        void DrawRect(Vector3[] vertices, int[] indices, Vector2[] uvs, int[] uvIndices, Vector3 offset, Vector3 scale, Texture2D texture, SurfaceTool surfaceTool)
         {
             if (!_textureUVOffsetDict.TryGetValue(texture, out var uvOffset))
                 return;
 
-            var a = vertices[indices[0]] + blockLocalPos;
-            var b = vertices[indices[1]] + blockLocalPos;
-            var c = vertices[indices[2]] + blockLocalPos;
-            var d = vertices[indices[3]] + blockLocalPos;
+            var a = vertices[indices[0]] + offset;
+            var b = vertices[indices[1]] + offset;
+            var c = vertices[indices[2]] + offset;
+            var d = vertices[indices[3]] + offset;
 
             var uvA = uvs[uvIndices[0]] * _uvSize + uvOffset;
             var uvB = uvs[uvIndices[1]] * _uvSize + uvOffset;
@@ -232,6 +184,11 @@ namespace MC
 
             surfaceTool.AddTriangleFan(triangle1, uvTriangle1, normals: normals);
             surfaceTool.AddTriangleFan(triangle2, uvTriangle2, normals: normals);
+        }
+
+        void FillOutlookDict()
+        {
+            _outlookDict.Add(Outlook.Cubic, new CubicOutlook());
         }
     }
 

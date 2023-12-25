@@ -67,6 +67,17 @@ namespace MC
         float _idleWalkBlendParam;
         float _idleWalkBlendParamFinalValue = -1f;
 
+        [Export] public int InteractCount
+        {
+            get { return _interactCount; }
+            set
+            {
+                _interactCount = value;
+                _animationTree.Set("parameters/InteractOneShot/request", (int)AnimationNodeOneShot.OneShotRequest.Fire);
+            }
+        }
+        int _interactCount = 0;
+
         float WalkDirectionValue
         {
             get { return _walkDirectionValue; }
@@ -83,6 +94,9 @@ namespace MC
         {
             _headBoneId = _skeleton.FindBone(_headBoneName);
             _rootBoneId = _skeleton.FindBone(_rootBoneName);
+
+            _skeleton = GetNode<Skeleton3D>("%Skeleton3D");
+            _animationTree = GetNode<AnimationTree>("%AnimationTree");
         }
 
         public void SetInvisible()
@@ -92,8 +106,7 @@ namespace MC
             {
                 if (mesh is MeshInstance3D mesh3d)
                 {
-                    mesh3d.SetLayerMaskValue(Global.CameraVisibleLayer, false);
-                    mesh3d.SetLayerMaskValue(Global.CameraNotVisibleButCastShadowLayer, true);
+                    mesh3d.CastShadow = GeometryInstance3D.ShadowCastingSetting.ShadowsOnly;
                 }
             }
         }

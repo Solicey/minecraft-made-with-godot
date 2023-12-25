@@ -94,6 +94,8 @@ namespace MC
 
             _global.LocalPlayer = this;  // Should send signal
             _global.GameStateChanged += OnGameStateChanged;
+
+            _animatedCharacter = GetNode<AnimatedCharacter>("%AnimatedCharacter");
         }
 
         public void Init()
@@ -170,12 +172,14 @@ namespace MC
             {
                 EmitSignal(SignalName.LocalPlayerBreakBlock, _rayCastInfo);
                 _breakBlockTimer.Start(_breakBlockInterval);
+                _animatedCharacter.InteractCount += 1;
             }
 
             if (Input.IsActionPressed("Place") && _rayCastInfo.IsColliding && _placeBlockTimer.TimeLeft <= 0)
             {
                 EmitSignal(SignalName.LocalPlayerPlaceBlock, _rayCastInfo);
                 _placeBlockTimer.Start(_placeBlockInterval);
+                _animatedCharacter.InteractCount += 1;
             }
         }
 
@@ -264,7 +268,7 @@ namespace MC
             return _jumpVelocity;
         }
 
-        void GenerateSelectionBoxMesh()
+        /*void GenerateSelectionBoxMesh()
         {
             var surfaceTool = new SurfaceTool();
             var material = new OrmMaterial3D();
@@ -292,7 +296,7 @@ namespace MC
             _selectionBox.Mesh = mesh;
             _selectionBox.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
             _selectionBox.Visible = false;
-        }
+        }*/
 
         void UpdateOccupiedBlockPositions()
         {

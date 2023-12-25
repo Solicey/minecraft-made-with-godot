@@ -18,8 +18,8 @@ config/icon="res://icon.svg"
 [autoload]
 
 Global="*res://Scripts/Global.cs"
-BlockManager="*res://Scripts/BlockManager.cs"
-RpcFunctions="*res://Scripts/RPCFunctions.cs"
+BlockManager="*res://Scripts/Block/BlockManager.cs"
+RpcFunctions="*res://Scripts/Network/RPCFunctions.cs"
 
 [dotnet]
 

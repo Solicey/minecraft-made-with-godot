@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://uq6uks7lnks"]
 
-[ext_resource type="Script" path="res://Scripts/UIManager.cs" id="1_3853v"]
+[ext_resource type="Script" path="res://Scripts/UI/UIManager.cs" id="1_3853v"]
 
 [node name="UIManager" type="Control" node_paths=PackedStringArray("_mainMenuPanel", "_hostButton", "_joinButton", "_addressEntry", "_portEntry", "_nameEntry", "_seedEntry", "_gameLoadingPanel", "_loadingMessageLabel", "_returnToMenuButton")]
 layout_mode = 3

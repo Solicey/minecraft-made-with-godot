@@ -124,7 +124,7 @@ namespace MC
                             var blockLocalPos = new Vector3I(x, y, z);
                             var blockWorldPos = chunkWorldPos + blockLocalPos;
 
-                            _blockManager.DrawBlock(_blockTypeArray[x, y, z], blockLocalPos, blockWorldPos, _surfaceTool, _typeGetter);
+                            _blockManager.DrawBlock(_blockTypeArray[x, y, z], blockLocalPos, blockWorldPos, Vector3.Zero, Vector3.One, _surfaceTool, _typeGetter);
                         }
                     }
                 }
