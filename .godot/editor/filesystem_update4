@@ -1,9 +1,3 @@
-res://Scenes/AnimatedCharacter.tscn
-res://Materials/Steve.tres
-res://Scenes/MainScene.tscn
-res://Scenes/UiManager.tscn
-res://Scenes/Player.tscn
-res://Scenes/World.tscn
 res://Scripts/Block/Block.cs
 res://Scripts/Block/BlockManager.cs
 res://Scripts/GameManager.cs
@@ -17,4 +11,12 @@ res://Scripts/Player/Player.cs
 res://Scripts/UI/UIManager.cs
 res://Scripts/World/Chunk.cs
 res://Scripts/World/World.cs
+res://Scenes/Chunk.tscn
+res://Materials/Steve.tres
 res://Resources/Blocks/Air.tres
+res://Scenes/MainScene.tscn
+res://Scenes/UiManager.tscn
+res://Scenes/Player.tscn
+res://Scenes/World.tscn
+res://Scenes/AnimatedCharacter.tscn
+res://Resources/Blocks/ShortGrass.tres

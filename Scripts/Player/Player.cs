@@ -147,9 +147,9 @@ namespace MC
 
             if (_rayCast.IsColliding())
             {
-                var collider = _rayCast.GetCollider();
+                var collider = _rayCast.GetCollider() as Node;
 
-                if (collider is Chunk chunk)
+                if (collider.IsInGroup(Global.WorldGroup))
                 {
                     _rayCastInfo.IsColliding = true;
                     _rayCastInfo.HitFaceNormal = _rayCast.GetCollisionNormal();

@@ -11,7 +11,7 @@ namespace MC
         public Dictionary<Vector3I, uint> TimeStampDict = new();
     }
 
-    public partial class Chunk : StaticBody3D
+    public partial class Chunk : Node3D
     {
         [Signal] public delegate void SyncDataArrivedEventHandler(int[] array);
 
@@ -31,17 +31,20 @@ namespace MC
 
         public bool IsDirty { get; private set; } = false;
 
+        public bool IsColliderUpToDate { get; set; } = false;
+
         public bool IsSyncDataArrived { get; set; } = false;
 
         Vector3I _shape;
 
-        [Export] CollisionShape3D _collisionShape;
-
-        [Export] MeshInstance3D _meshInstance;
+        Dictionary<MaterialType, MeshInstance3D> _meshMap = new();
+        Dictionary<ColliderType, StaticBody3D> _staticBodyMap = new();
+        Dictionary<ColliderType, CollisionShape3D> _colliderMap = new();
 
         BlockType[,,] _blockTypeArray;
 
-        SurfaceTool _surfaceTool = new();
+        Dictionary<MaterialType, SurfaceTool> _meshSurfaceTools = new();
+        Dictionary<ColliderType, SurfaceTool> _colliderSurfaceTools = new();
 
         BlockManager _blockManager;
         RPCFunctions _rpcFunctions;
@@ -58,17 +61,46 @@ namespace MC
 
             _shape = Global.ChunkShape;
             _blockTypeArray = new BlockType[_shape.X, _shape.Y, _shape.Z];
+
+            foreach (MaterialType type in Enum.GetValues(typeof(MaterialType)))
+            {
+                var mesh = new MeshInstance3D();
+                AddChild(mesh);
+                _meshMap[type] = mesh;
+
+                var surfaceTool = new SurfaceTool();
+                _meshSurfaceTools[type] = surfaceTool;
+            }
+            foreach (ColliderType type in Enum.GetValues(typeof(ColliderType)))
+            {
+                var body = new StaticBody3D();
+                AddChild(body);
+                body.AddToGroup(Global.WorldGroup);
+                _staticBodyMap[type] = body;
+
+                var collider = new CollisionShape3D();
+                body.AddChild(collider);
+                _colliderMap[type] = collider;
+                _colliderSurfaceTools[type] = new();
+            }
+
+            _staticBodyMap[ColliderType.NotCollidable].SetCollisionLayerValue(Global.ColliderLayer, false);
+            _staticBodyMap[ColliderType.NotCollidable].SetCollisionLayerValue(Global.NonColliderLayer, true);
         }
 
         public void Init(TerrainGenerator generator, BlockTypeGetter typeGetter)
         {
             _generator = generator;
             _typeGetter = typeGetter;
+            IsDirty = false;
+            IsColliderUpToDate = false;
         }
 
         public async void SyncData(Vector2I chunkPos)
         {
-            _meshInstance.Mesh = null;
+            foreach (var mesh in _meshMap.Values)
+                mesh.Mesh = null;
+
             ChunkPosition = chunkPos;
 
             await Task.Run(() =>
@@ -107,11 +139,12 @@ namespace MC
 
         public async Task SyncMesh()
         {
-            ArrayMesh mesh = new();
+            Dictionary<MaterialType, ArrayMesh> meshes = new();
 
             await Task.Run(() =>
             {
-                _surfaceTool.Begin(Mesh.PrimitiveType.Triangles);
+                foreach (var tool in _meshSurfaceTools.Values)
+                    tool.Begin(Mesh.PrimitiveType.Triangles);
 
                 var chunkWorldPos = World.ChunkPosToChunkWorldPos(ChunkPosition);
 
@@ -124,24 +157,71 @@ namespace MC
                             var blockLocalPos = new Vector3I(x, y, z);
                             var blockWorldPos = chunkWorldPos + blockLocalPos;
 
-                            _blockManager.DrawBlock(_blockTypeArray[x, y, z], blockLocalPos, blockWorldPos, Vector3.Zero, Vector3.One, _surfaceTool, _typeGetter);
+                            _blockManager.DrawMesh(_blockTypeArray[x, y, z], blockLocalPos, blockWorldPos, Vector3.Zero, Vector3.One, _meshSurfaceTools, _typeGetter);
                         }
                     }
                 }
 
                 //GD.Print("Reach here!");
 
-                _surfaceTool.SetMaterial(_blockManager.Material);
-                mesh = _surfaceTool.Commit();
+                foreach (var pair in _meshSurfaceTools)
+                {
+                    pair.Value.SetMaterial(_blockManager.MaterialMap.GetValueOrDefault(pair.Key));
+                    meshes[pair.Key] = pair.Value.Commit();
+                }
 
             });
 
             //GD.Print("Sync mesh done!");
 
-            _meshInstance.Mesh = mesh;
-            _collisionShape.Shape = mesh.CreateTrimeshShape();
+            foreach (var type in meshes.Keys)
+                _meshMap[type].Mesh = meshes[type];
+
+            //_collisionShape.Shape = mesh.CreateTrimeshShape();
 
             IsDirty = false;
+        }
+
+        public async Task SyncCollider()
+        {
+            Dictionary<ColliderType, ArrayMesh> colliders = new();
+
+            await Task.Run(() =>
+            {
+                foreach (var tool in _colliderSurfaceTools.Values)
+                    tool.Begin(Mesh.PrimitiveType.Triangles);
+
+                var chunkWorldPos = World.ChunkPosToChunkWorldPos(ChunkPosition);
+
+                for (int x = 0; x < _shape.X; x++)
+                {
+                    for (int y = 0; y < _shape.Y; y++)
+                    {
+                        for (int z = 0; z < _shape.Z; z++)
+                        {
+                            var blockLocalPos = new Vector3I(x, y, z);
+                            var blockWorldPos = chunkWorldPos + blockLocalPos;
+
+                            _blockManager.DrawCollider(_blockTypeArray[x, y, z], blockLocalPos, blockWorldPos, Vector3.Zero, Vector3.One, _colliderSurfaceTools, _typeGetter);
+                        }
+                    }
+                }
+
+                //GD.Print("Reach here!");
+
+                foreach (var pair in _colliderSurfaceTools)
+                    colliders[pair.Key] = pair.Value.Commit();
+
+            });
+
+            //GD.Print("Sync mesh done!");
+
+            foreach (var type in colliders.Keys)
+                _colliderMap[type].Shape = colliders[type].CreateTrimeshShape();
+
+            //_collisionShape.Shape = mesh.CreateTrimeshShape();
+
+            IsColliderUpToDate = true;
         }
 
         public BlockType GetLocalBlockType(Vector3I blockLocalPos)
@@ -169,7 +249,7 @@ namespace MC
             
             if (shallCompareTimeStamp)
                 _chunkVariation.TimeStampDict[blockLocalPos] = timeStamp;
-            
+
             IsDirty = (oldBlockType != blockType) || IsDirty;
             return IsDirty;
         }

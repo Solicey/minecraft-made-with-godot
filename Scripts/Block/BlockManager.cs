@@ -23,7 +23,7 @@ namespace MC
 
     public partial class BlockManager : Node
     {
-        public StandardMaterial3D Material { get; private set; }
+        public Dictionary<MaterialType, StandardMaterial3D> MaterialMap { get; private set; } = new();
 
         Dictionary<BlockType, Block> _blockDict = new();
         Dictionary<Texture2D, Vector2> _textureUVOffsetDict = new();
@@ -31,9 +31,9 @@ namespace MC
         const int _atlasWidth = 4;
         int _atlasHeight = 0;
 
-        float _uvWidth { get { return 1f / _atlasWidth; } }
-        float _uvHeight { get { return 1f / _atlasHeight; } }
-        Vector2 _uvSize { get { return new Vector2(_uvWidth, _uvHeight); } }
+        float UVWidth { get { return 1f / _atlasWidth; } }
+        float UVHeight { get { return 1f / _atlasHeight; } }
+        Vector2 UVSize { get { return new Vector2(UVWidth, UVHeight); } }
 
         const int _blockTextureSize = 16;
 
@@ -66,14 +66,7 @@ namespace MC
             return block;
         }
 
-        public bool IsTransparent(BlockType type)
-        {
-            if (!_blockDict.TryGetValue(type, out var block))
-                return true;
-            return block.IsTransparent;
-        }
-
-        public void DrawBlock(BlockType blockType, Vector3I blockLocalPos, Vector3I blockWorldPos, Vector3 offset, Vector3 scale, SurfaceTool surfaceTool, BlockTypeGetter typeGetter)
+        public void DrawMesh(BlockType blockType, Vector3I blockLocalPos, Vector3I blockWorldPos, Vector3 offset, Vector3 scale, Dictionary<MaterialType, SurfaceTool> surfaceTools, BlockTypeGetter typeGetter)
         {
             if (blockType == BlockType.Air)
                 return;
@@ -83,6 +76,27 @@ namespace MC
                 return;
 
             if (!_outlookDict.TryGetValue(block.Outlook, out var outlook))
+                return;
+
+            if (!surfaceTools.TryGetValue(block.MaterialType, out var surfaceTool)) 
+                return;
+
+            outlook.Draw(blockLocalPos, blockWorldPos, offset, scale, block, surfaceTool, typeGetter, GetBlock, DrawRect);
+        }
+
+        public void DrawCollider(BlockType blockType, Vector3I blockLocalPos, Vector3I blockWorldPos, Vector3 offset, Vector3 scale, Dictionary<ColliderType, SurfaceTool> surfaceTools, BlockTypeGetter typeGetter)
+        {
+            if (blockType == BlockType.Air)
+                return;
+
+            var block = GetBlock(blockType);
+            if (block == null)
+                return;
+
+            if (!_outlookDict.TryGetValue(block.UseCustomCollider ? block.CustomColliderOutlook : block.Outlook, out var outlook))
+                return;
+
+            if (!surfaceTools.TryGetValue(block.ColliderType, out var surfaceTool))
                 return;
 
             outlook.Draw(blockLocalPos, blockWorldPos, offset, scale, block, surfaceTool, typeGetter, GetBlock, DrawRect);
@@ -150,12 +164,28 @@ namespace MC
 
         void CreateMaterial()
         {
-            Material = new StandardMaterial3D()
+            MaterialMap.Add(MaterialType.Opaque, new StandardMaterial3D()
             {
                 AlbedoTexture = _atlasTexture,
                 TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest,
-                SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled
-            };
+                SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled,
+            });
+            MaterialMap.Add(MaterialType.AlphaClip, new StandardMaterial3D()
+            {
+                AlbedoTexture = _atlasTexture,
+                TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest,
+                SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled,
+                Transparency = BaseMaterial3D.TransparencyEnum.AlphaScissor,
+                CullMode = BaseMaterial3D.CullModeEnum.Disabled
+            });
+            MaterialMap.Add(MaterialType.AlphaBlend, new StandardMaterial3D()
+            {
+                AlbedoTexture = _atlasTexture,
+                TextureFilter = BaseMaterial3D.TextureFilterEnum.Nearest,
+                SpecularMode = BaseMaterial3D.SpecularModeEnum.Disabled,
+                Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
+                CullMode = BaseMaterial3D.CullModeEnum.Disabled
+            });
         }
 
         void DrawRect(Vector3[] vertices, int[] indices, Vector2[] uvs, int[] uvIndices, Vector3 offset, Vector3 scale, Texture2D texture, SurfaceTool surfaceTool)
@@ -168,10 +198,10 @@ namespace MC
             var c = vertices[indices[2]] + offset;
             var d = vertices[indices[3]] + offset;
 
-            var uvA = uvs[uvIndices[0]] * _uvSize + uvOffset;
-            var uvB = uvs[uvIndices[1]] * _uvSize + uvOffset;
-            var uvC = uvs[uvIndices[2]] * _uvSize + uvOffset;
-            var uvD = uvs[uvIndices[3]] * _uvSize + uvOffset;
+            var uvA = uvs[uvIndices[0]] * UVSize + uvOffset;
+            var uvB = uvs[uvIndices[1]] * UVSize + uvOffset;
+            var uvC = uvs[uvIndices[2]] * UVSize + uvOffset;
+            var uvD = uvs[uvIndices[3]] * UVSize + uvOffset;
 
             var triangle1 = new Vector3[] { a, b, c };
             var triangle2 = new Vector3[] { a, c, d };
@@ -186,9 +216,11 @@ namespace MC
             surfaceTool.AddTriangleFan(triangle2, uvTriangle2, normals: normals);
         }
 
+        // TODO
         void FillOutlookDict()
         {
             _outlookDict.Add(Outlook.Cubic, new CubicOutlook());
+            _outlookDict.Add(Outlook.Billboard, new BillboardOutlook());
         }
     }
 

@@ -1,10 +1,14 @@
-[gd_scene load_steps=7 format=3 uid="uid://c2migx3psh2uh"]
+[gd_scene load_steps=8 format=3 uid="uid://c2migx3psh2uh"]
 
 [ext_resource type="Script" path="res://Scripts/World/World.cs" id="1_3y7hb"]
 [ext_resource type="PackedScene" uid="uid://dhjxscuu0ix61" path="res://Scenes/Chunk.tscn" id="2_tnju0"]
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_vsmhn"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_msgte"]
 noise_type = 3
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_i53f3"]
+noise_type = 0
+frequency = 0.3
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6wmot"]
 
@@ -21,7 +25,8 @@ ssao_light_affect = 0.2
 [node name="World" type="Node3D"]
 script = ExtResource("1_3y7hb")
 _chunkScene = ExtResource("2_tnju0")
-_fastNoiseLite = SubResource("FastNoiseLite_vsmhn")
+_heightNoise = SubResource("FastNoiseLite_msgte")
+_plantNoise = SubResource("FastNoiseLite_i53f3")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_p88c8")
@@ -31,4 +36,5 @@ transform = Transform3D(0.807259, -0.345366, -0.478597, 0, -0.810911, 0.58517, -
 light_energy = 0.6
 light_indirect_energy = 0.6
 shadow_enabled = true
+shadow_bias = 0.05
 directional_shadow_max_distance = 50.0

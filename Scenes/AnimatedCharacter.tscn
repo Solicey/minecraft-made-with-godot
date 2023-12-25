@@ -129,7 +129,6 @@ fadeout_time = 0.05
 animation = &"Walking"
 
 [sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_ennpy"]
-graph_offset = Vector2(-191.716, -85.9009)
 nodes/Idle/node = SubResource("AnimationNodeAnimation_frsoc")
 nodes/Idle/position = Vector2(-80, 40)
 nodes/IdleWalkBlend/node = SubResource("AnimationNodeBlend2_3e43i")
@@ -166,8 +165,8 @@ _animationTree = NodePath("AnimationTree")
 
 [node name="Skeleton3D" parent="Armature" index="0"]
 unique_name_in_owner = true
-bones/2/rotation = Quaternion(0.999771, -0.0214007, -7.54806e-08, 3.52284e-09)
-bones/3/rotation = Quaternion(0.999771, 0.0214007, -7.54806e-08, -3.52284e-09)
+bones/2/rotation = Quaternion(0.999763, -0.0217864, -7.548e-08, 2.76171e-09)
+bones/3/rotation = Quaternion(0.999763, 0.0217864, -7.548e-08, -2.76171e-09)
 
 [node name="Head" parent="Armature/Skeleton3D" index="0"]
 surface_material_override/0 = ExtResource("3_xd4iq")

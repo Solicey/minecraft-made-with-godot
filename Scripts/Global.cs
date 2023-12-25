@@ -20,7 +20,9 @@ namespace MC
 
         public static float Gravity { get; private set; } = 9.8f;
 
-        public static string PlayerGroupName { get; private set; } = "PlayerGroup";
+        public static string PlayerGroup { get; private set; } = "PlayerGroup";
+
+        public static string WorldGroup { get; private set; } = "WorldGroup";
 
         public static uint MaxTimeStampValue { get; private set; } = 100;
 
@@ -29,6 +31,10 @@ namespace MC
         public static int RpcBlockVariantUnitCount { get; private set; } = 5;
 
         public static int FastChunkUpdateMaxManhattanDistance { get; private set; } = 2;
+
+        public static int ColliderLayer { get; private set; } = 1;
+        public static int NonColliderLayer { get; private set; } = 2;
+        public static int PlayerLayer { get; private set; } = 3;
 
         public GameStartInfo GameStartInfo
         {

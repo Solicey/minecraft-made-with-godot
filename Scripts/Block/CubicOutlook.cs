@@ -37,22 +37,32 @@ namespace MC
         {
             bool isTransparent = block.IsTransparent;
 
-            if (isTransparent || blockGetter(typeGetter(blockWorldPos + Vector3I.Up)).IsTransparent)
+            var isUpTransparent = blockGetter(typeGetter(blockWorldPos + Vector3I.Up)).IsTransparent;
+            var isDownTransparent = blockGetter(typeGetter(blockWorldPos + Vector3I.Down)).IsTransparent;
+            var isLeftTransparent = blockGetter(typeGetter(blockWorldPos + Vector3I.Left)).IsTransparent;
+            var isRightTransparent = blockGetter(typeGetter(blockWorldPos + Vector3I.Right)).IsTransparent;
+            var isForwardTransparent = blockGetter(typeGetter(blockWorldPos + Vector3I.Forward)).IsTransparent;
+            var isBackTransparent = blockGetter(typeGetter(blockWorldPos + Vector3I.Back)).IsTransparent;
+
+            if (!isUpTransparent && !isDownTransparent && !isLeftTransparent && !isRightTransparent && !isForwardTransparent && !isBackTransparent)
+                return;
+
+            if (isTransparent || isUpTransparent)
                 rectDrawer(Vertices, Top, UVCoords, UVIndices, blockLocalPos + offset, scale, block.TopTexture ?? block.MainTexture, surfaceTool);
 
-            if (isTransparent || blockGetter(typeGetter(blockWorldPos + Vector3I.Down)).IsTransparent)
+            if (isTransparent || isDownTransparent)
                 rectDrawer(Vertices, Bottom, UVCoords, UVIndices, blockLocalPos + offset, scale, block.BottomTexture ?? block.MainTexture, surfaceTool);
 
-            if (isTransparent || blockGetter(typeGetter(blockWorldPos + Vector3I.Left)).IsTransparent)
+            if (isTransparent || isLeftTransparent)
                 rectDrawer(Vertices, Left, UVCoords, UVIndices, blockLocalPos + offset, scale, block.MainTexture, surfaceTool);
 
-            if (isTransparent || blockGetter(typeGetter(blockWorldPos + Vector3I.Right)).IsTransparent)
+            if (isTransparent || isRightTransparent)
                 rectDrawer(Vertices, Right, UVCoords, UVIndices, blockLocalPos + offset, scale, block.MainTexture, surfaceTool);
 
-            if (isTransparent || blockGetter(typeGetter(blockWorldPos + Vector3I.Forward)).IsTransparent)
+            if (isTransparent || isForwardTransparent)
                 rectDrawer(Vertices, Front, UVCoords, UVIndices, blockLocalPos + offset, scale, block.MainTexture, surfaceTool);
 
-            if (isTransparent || blockGetter(typeGetter(blockWorldPos + Vector3I.Back)).IsTransparent)
+            if (isTransparent || isBackTransparent)
                 rectDrawer(Vertices, Back, UVCoords, UVIndices, blockLocalPos + offset, scale, block.MainTexture, surfaceTool);
         }
     }

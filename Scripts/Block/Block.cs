@@ -8,7 +8,9 @@ namespace MC
         Air,
         Dirt,
         Stone,
-        Grass
+        Grass,
+        ShortGrass,
+
     }
 
     public enum Outlook
@@ -18,10 +20,17 @@ namespace MC
         Stair
     }
 
-    public enum TransparentType
+    public enum MaterialType
     {
+        Opaque,
         AlphaClip,
-        Blend
+        AlphaBlend
+    }
+
+    public enum ColliderType
+    {
+        Collidable,
+        NotCollidable
     }
 
     [GlobalClass]
@@ -41,13 +50,13 @@ namespace MC
 
         [Export] public bool IsTransparent { get; set; }
 
-        [Export] public TransparentType TransparentType { get; set; }
+        [Export] public MaterialType MaterialType { get; set; }
 
-        [Export] public bool HasCollider { get; set; }
+        [Export] public ColliderType ColliderType { get; set; }
 
-        // 如果没有collider，需要定义triggerbox的形状和位置
-        [Export] public Vector3 TriggerBoxScale { get; set; }
-        [Export] public bool IsTriggerBoxStaysAtCenter { get; set; }
+        [Export] public bool UseCustomCollider { get; set; }
+        [Export] public Outlook CustomColliderOutlook { get; set; }
+        [Export] public Vector3 CustomColliderScale { get; set; }
 
         public Block() { }
     }

@@ -1,11 +1,11 @@
+Node3D
+CollisionShape3D
 MeshInstance3D
 MultiplayerSynchronizer
 AnimationTree
 DirectionalLight3D
 RayCast3D
 Camera3D
-Node3D
-CollisionShape3D
 Node
 WorldEnvironment
 StaticBody3D

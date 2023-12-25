@@ -20,13 +20,13 @@ namespace MC
 
         List<Vector2I> _renderOrder = new();
 
-        [Export] FastNoiseLite _fastNoiseLite;
+        [Export] FastNoiseLite _heightNoise;
+        [Export] FastNoiseLite _plantNoise;
 
         [Export] float _chunkUpdateInterval = 0.5f;
         Vector2I _oldCenterChunkPos = new();
         Timer _chunkUpdateTimer = new();
 
-        bool _hasInit = false;
         bool _isUpdating = false;
 
         [Signal] public delegate void UpdateChunkDoneEventHandler();
@@ -41,7 +41,8 @@ namespace MC
             _global.SeedSet += (uint seed) =>
             {
                 GD.Print($"Noise seed set: {seed}");
-                _fastNoiseLite.Seed = (int)seed;
+                _heightNoise.Seed = (int)seed;
+                _plantNoise.Seed = (int)(seed + seed);
             };
 
             _global.LocalPlayerSet += () =>
@@ -59,21 +60,6 @@ namespace MC
             _chunkUpdateTimer.Timeout += OnChunkUpdateTimerTimeout;
             _chunkUpdateTimer.OneShot = true;
 
-            // TODO: flexible render chunk distance
-            var dis = Global.RenderChunkDistance;
-            for (int x = 0; x <= dis; x++)
-            {
-                for (int y = 0; y <= dis; y++)
-                {
-                    for (int sx = -1; sx <= ((x > 0) ? 1 : 0); sx += 2)
-                    {
-                        for (int sy = -1; sy <= ((y > 0) ? 1 : 0); sy += 2)
-                        {
-                            _renderOrder.Add(new Vector2I(x * sx, y * sy));
-                        }
-                    }
-                }
-            }
         }
 
         public static Vector2I WorldPosToChunkPos(Vector3 worldPos)
@@ -110,14 +96,18 @@ namespace MC
 
         public async Task<bool> Init()
         {
-            if (_isUpdating)
-                await ToSignal(this, SignalName.UpdateChunkDone);
+            while (_isUpdating)
+                await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
+            _isUpdating = false;
 
-            _hasInit = false;
             _chunkUpdateTimer.Stop();
+
+            UpdateRenderOrder();
 
             var centerChunkPos = WorldPosToChunkPos(Global.PlayerSpawnPosition);
 
+            foreach (var chunk in _chunkPosMap.Values)
+                chunk?.QueueFree();
             _chunkPosMap.Clear();
 
             List<Task> tasks = new();
@@ -144,12 +134,19 @@ namespace MC
                 var chunk = _chunkPosMap[chunkPos];
                 var task = chunk.SyncMesh();
                 tasks.Add(task);
+
+                if (ChunkManhattanDistance(Vector2I.Zero, _renderOrder[i]) > Global.FastChunkUpdateMaxManhattanDistance)
+                    continue;
+
+                task = chunk.SyncCollider();
+                tasks.Add(task);
             }
             await Task.WhenAll(tasks);
 
             GD.Print("World create done");
 
-            _hasInit = true;
+            _isUpdating = false;
+            EmitSignal(SignalName.UpdateChunkDone);
             _chunkUpdateTimer.Start(_chunkUpdateInterval);
 
             return true;
@@ -166,7 +163,7 @@ namespace MC
                 {
                     var blockWorldPos = chunkWorldPos + new Vector2I(x, z);
 
-                    int groundHeight = (int)((_fastNoiseLite.GetNoise2D(blockWorldPos.X, blockWorldPos.Y) + 1f) / 2f * shape.Y * 0.9f);
+                    int groundHeight = Math.Min((int)((_heightNoise.GetNoise2D(blockWorldPos.X, blockWorldPos.Y) + 1f) / 2f * shape.Y), shape.Y - 3);
                     int stoneHeight = (int)(groundHeight * 2f / 3f);
 
                     for (int y = 0; y < stoneHeight; y++)
@@ -179,6 +176,10 @@ namespace MC
 
                     for (int y = groundHeight; y < shape.Y; y++)
                         blockArray[x, y, z] = BlockType.Air;
+
+                    bool spawnShortGrass = ((_plantNoise.GetNoise2D(blockWorldPos.X, blockWorldPos.Y) + 1f) / 2f) > 0.7f;
+                    if (spawnShortGrass)
+                        blockArray[x, groundHeight, z] = BlockType.ShortGrass;
                 }
             }
         }
@@ -198,6 +199,7 @@ namespace MC
         async Task<bool> Update(Vector2I centerChunkPos, bool isCenterChunkPosNew)
         {
             GD.Print("Begin update!");
+            //GD.Print($"Center chunk pos: {centerChunkPos}");
 
             List<Task> tasks = new();
 
@@ -265,15 +267,24 @@ namespace MC
                     continue;
                 }
 
+                var chunk = _chunkPosMap[chunkPos];
+
                 if (dirtyChunkPositions.Contains(chunkPos) ||
                     dirtyChunkPositions.Contains(chunkPos + Vector2I.Up) ||
                     dirtyChunkPositions.Contains(chunkPos + Vector2I.Down) ||
                     dirtyChunkPositions.Contains(chunkPos + Vector2I.Left) ||
                     dirtyChunkPositions.Contains(chunkPos + Vector2I.Right))
                 {
-                    var chunk = _chunkPosMap[chunkPos];
+                    chunk.IsColliderUpToDate = false;
                     var task = chunk.SyncMesh();
                     //GD.Print($"Sync mesh: {chunkPos}");
+                    tasks.Add(task);
+                }
+
+                if (!chunk.IsColliderUpToDate && ChunkManhattanDistance(Vector2I.Zero, delta) <= Global.FastChunkUpdateMaxManhattanDistance)
+                {
+                    var task = chunk.SyncCollider();
+                    //GD.Print($"Sync collider: {chunkPos}");
                     tasks.Add(task);
                 }
             }
@@ -286,7 +297,7 @@ namespace MC
 
         async void OnChunkUpdateTimerTimeout()
         {
-            if (!_hasInit || _isUpdating)
+            if (_isUpdating)
                 return;
             _isUpdating = true;
             //GD.Print("Timer update begin!");
@@ -328,12 +339,7 @@ namespace MC
         {
             BlockType type = (BlockType)blockType;
             while (_isUpdating)
-            {
-                await Task.Run(() =>
-                {
-                    CallDeferred(nameof(WaitForUpdateChunkDone));
-                });
-            }
+                await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
             _isUpdating = true;
 
             if (!_chunkPosMap.TryGetValue(chunkPos, out Chunk chunk) ||
@@ -416,7 +422,7 @@ namespace MC
             if (!_blockManager.IsPlacable(hitBlockType, BlockType.Stone, norm))
                 return;
 
-            var playerList = GetTree().GetNodesInGroup(Global.PlayerGroupName);
+            var playerList = GetTree().GetNodesInGroup(Global.PlayerGroup);
             foreach (var node in playerList)
             {
                 var player = (Player)node;
@@ -431,6 +437,25 @@ namespace MC
         async void WaitForUpdateChunkDone()
         {
             await ToSignal(this, SignalName.UpdateChunkDone);
+        }
+
+        void UpdateRenderOrder()
+        {
+            _renderOrder.Clear();
+            var dis = Global.RenderChunkDistance;
+            for (int x = 0; x <= dis; x++)
+            {
+                for (int y = 0; y <= dis; y++)
+                {
+                    for (int sx = -1; sx <= ((x > 0) ? 1 : 0); sx += 2)
+                    {
+                        for (int sy = -1; sy <= ((y > 0) ? 1 : 0); sy += 2)
+                        {
+                            _renderOrder.Add(new Vector2I(x * sx, y * sy));
+                        }
+                    }
+                }
+            }
         }
     }
 }
