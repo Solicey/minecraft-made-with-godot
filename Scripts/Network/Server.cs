@@ -32,7 +32,7 @@ namespace MC
             _rpcFunctions.ReceivedBlockVaryRequest += OnReceivedBlockVaryRequest;
             _rpcFunctions.ReceivedSendSyncChunkRequest += OnReceivedSendSyncChunkRequest;
         }
-        public bool CreateServer(int port)
+        public bool CreateServer(uint port)
         {
             Reset();
 
@@ -48,7 +48,7 @@ namespace MC
 
             _peer = new(); 
 
-            var error = _peer.CreateServer(port);
+            var error = _peer.CreateServer((int)port);
             if (error != Error.Ok)
             {
                 GD.PrintErr($"Create server failed: {error}");
@@ -70,7 +70,7 @@ namespace MC
         {
             if (_peer != null )
             {
-                _peer.Host.Destroy();
+                _peer.Host?.Destroy();
                 _peer = null;
             }
             _multiplayer = null;

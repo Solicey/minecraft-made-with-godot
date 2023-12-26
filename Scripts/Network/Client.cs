@@ -37,7 +37,7 @@ namespace MC
             _global.GameStateChanged += OnGameStateChanged;
         }
 
-        public async Task<bool> CreateClient(string address, int port)
+        public async Task<bool> CreateClient(string address, uint port)
         {
             Reset();
 
@@ -54,7 +54,7 @@ namespace MC
 
             var error = await Task.Run(() =>
             {
-                return _peer.CreateClient(address, port);
+                return _peer.CreateClient(address, (int)port);
             });
             if (error != Error.Ok)
             {

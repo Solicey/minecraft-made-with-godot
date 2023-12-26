@@ -9,72 +9,77 @@ namespace MC
 
         [Signal] public delegate void JoinGameEventHandler(GameStartInfo info);
 
-        [Export] Panel _mainMenuPanel;
-        [Export] Button _hostButton;
-        [Export] Button _joinButton;
-        [Export] TextEdit _addressEntry;
-        [Export] TextEdit _portEntry;
-        [Export] TextEdit _nameEntry;
-        [Export] TextEdit _seedEntry;
+        [Export] MainMenuUI _mainMenuUI;
+        [Export] HostGameUI _hostGameUI;
+        [Export] JoinGameUI _joinGameUI;
+        [Export] LoadingUI _loadingUI;
+        [Export] InGameUI _inGameUI;
 
-        [Export] Panel _gameLoadingPanel;
-        [Export] Label _loadingMessageLabel;
-        [Export] Button _returnToMenuButton;
+        [Export] string _clientCreatingMsg;
+        [Export] string _clientCantCreateErrorMsg;
+        [Export] string _clientDisconnectedErrorMsg;
+        [Export] string _clientTimeoutErrorMsg;
+        [Export] string _clientSyncingPlayerMsg;
+        [Export] string _clientSyncingSeedMsg;
+        [Export] string _initingWorldMsg;
+        [Export] string _serverCreatingMsg;
+        [Export] string _serverCantCreateErrorMsg;
+        [Export] string _serverSyncingPlayerMsg;
 
         Global _global;
-
-        const string _defaultAddress = "127.0.0.1";
-        const string _defaultPort = "8848";
-        const string _defaultName = "Steve";
+        Control _currentControl = null;
 
         public override void _Ready()
         {
-            _addressEntry.Text = _defaultAddress;
-            _portEntry.Text = _defaultPort;
-            _nameEntry.Text = _defaultName;
-            _seedEntry.Text = GD.Randi().ToString();
-
             _global = GetNode<Global>("/root/Global");
 
             _global.GameStateChanged += OnGameStateChanged;
-        }
 
-        public void OnHostButtonPressed()
-        {
-            EmitSignal(SignalName.HostGame, new GameStartInfo
+            ChangeCurrentControlTo(_mainMenuUI);
+
+            _mainMenuUI.HostGameButtonPressed += () => { ChangeCurrentControlTo(_hostGameUI); };
+
+            _mainMenuUI.JoinGameButtonPressed += () => { ChangeCurrentControlTo(_joinGameUI); };
+
+            _hostGameUI.ReturnToMainMenuButtonPressed += () => { ChangeCurrentControlTo(_mainMenuUI); };
+
+            _hostGameUI.HostGameButtonPressed += (uint seed, uint port, string name) =>
             {
-                Address = _addressEntry.Text,
-                Port = GetPort(),
-                PlayerName = _nameEntry.Text,
-                Seed = GetSeed()
-            });
-        }
+                ChangeCurrentControlTo(_loadingUI);
+                EmitSignal(SignalName.HostGame, new GameStartInfo
+                {
+                    Seed = seed,
+                    Port = port,
+                    PlayerName = name
+                });
+            };
 
-        public void OnJoinButtonPressed()
-        {
-            EmitSignal(SignalName.JoinGame, new GameStartInfo
+            _joinGameUI.ReturnToMainMenuButtonPressed += () => { ChangeCurrentControlTo(_mainMenuUI); };
+
+            _joinGameUI.JoinGameButtonPressed += (string addr, uint port, string name) =>
             {
-                Address = _addressEntry.Text,
-                Port = GetPort(),
-                PlayerName = _nameEntry.Text,
-                Seed = GetSeed()
-            });
+                ChangeCurrentControlTo(_loadingUI);
+                EmitSignal(SignalName.JoinGame, new GameStartInfo
+                {
+                    Address = addr,
+                    Port = port,
+                    PlayerName = name
+                });
+            };
+
+            _loadingUI.ReturnToMainMenuButtonPressed += () => { ChangeCurrentControlTo(_mainMenuUI); };
         }
 
-        public void OnReturnToMenuButtonPressed()
+        void ChangeCurrentControlTo(Control control)
         {
-            _gameLoadingPanel.Visible = false;
-            // do something
-        }
+            foreach (var child in GetChildren())
+                RemoveChild(child);
 
-        int GetPort()
-        {
-            return int.TryParse(_portEntry.Text, out var port) ? port : int.Parse(_defaultPort);
-        }
+            _currentControl = control;
+            AddChild(_currentControl);
 
-        uint GetSeed()
-        {
-            return uint.TryParse(_seedEntry.Text, out var seed) ? seed : GD.Randi();
+            if (_currentControl == _mainMenuUI)
+                _global.GameState = GameState.InMainMenu;
         }
 
         void OnGameStateChanged(int state)
@@ -84,8 +89,38 @@ namespace MC
 
             switch (gameState)
             {
+                case GameState.ClientConnecting:
+                    _loadingUI.SetLoadingMessage(_clientCreatingMsg);
+                    break;
+                case GameState.ClientCantCreate:
+                    _loadingUI.SetErrorMessage(_clientCantCreateErrorMsg);
+                    break;
+                case GameState.ClientTimeout:
+                    _loadingUI.SetErrorMessage(_clientTimeoutErrorMsg);
+                    break;
+                case GameState.ClientDisconnected:
+                    _loadingUI.SetErrorMessage(_clientDisconnectedErrorMsg);
+                    break;
+                case GameState.ClientConnected_SyncingPlayer:
+                    _loadingUI.SetLoadingMessage(_clientSyncingPlayerMsg);
+                    break;
+                case GameState.ClientPlayerSynced_SyncingWorldSeed:
+                    _loadingUI.SetLoadingMessage(_clientSyncingSeedMsg);
+                    break;
+                case GameState.InitingWorld:
+                    _loadingUI.SetLoadingMessage(_initingWorldMsg);
+                    break;
+                case GameState.ServerCreating:
+                    _loadingUI.SetLoadingMessage(_serverCreatingMsg);
+                    break;
+                case GameState.ServerCantCreate:
+                    _loadingUI.SetErrorMessage(_serverCantCreateErrorMsg);
+                    break;
+                case GameState.ServerCreated_SyncingPlayer:
+                    _loadingUI.SetLoadingMessage(_serverSyncingPlayerMsg);
+                    break;
                 case GameState.InGameActive:
-                    _mainMenuPanel.Visible = false;
+                    ChangeCurrentControlTo(_inGameUI);
                     break;
             }
         }

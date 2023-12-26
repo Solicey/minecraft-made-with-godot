@@ -44,7 +44,7 @@ namespace MC
         [Export] float _jumpHeight = 1f;
         [Export] float _camSensitivity = 0.01f;
         [Export] float _playerHeight = 1.8f;
-        [Export] float _headPitchMaxAngleRadian = 1.5f;
+        [Export] float _headPitchMaxAngleRadian = 1.55f;
 
         bool _jumping = false;
         Vector2 _moveDirection = new();
@@ -137,7 +137,11 @@ namespace MC
                 return;
 
             if (Position.Y < 0)
+            {
                 Position = Global.PlayerSpawnPosition;
+                _gravityVelocity = Vector3.Zero;
+                _jumpVelocity = Vector3.Zero;
+            }
 
             var chunkPos = World.WorldPosToChunkPos(Position);
             CurrentChunkPos = chunkPos;
@@ -168,18 +172,22 @@ namespace MC
             if (_global.GameState != GameState.InGameActive)
                 return;
 
-            if (Input.IsActionPressed("Break") && _rayCastInfo.IsColliding && _breakBlockTimer.TimeLeft <= 0)
+            if (Input.IsActionPressed("Break") && _breakBlockTimer.TimeLeft <= 0)
             {
-                EmitSignal(SignalName.LocalPlayerBreakBlock, _rayCastInfo);
                 _breakBlockTimer.Start(_breakBlockInterval);
-                _animatedCharacter.InteractCount += 1;
-            }
+                _animatedCharacter.InteractCount += 1; 
+                
+                if (_rayCastInfo.IsColliding)
+                    EmitSignal(SignalName.LocalPlayerBreakBlock, _rayCastInfo);
 
-            if (Input.IsActionPressed("Place") && _rayCastInfo.IsColliding && _placeBlockTimer.TimeLeft <= 0)
+            }
+            else if (Input.IsActionPressed("Place") && _placeBlockTimer.TimeLeft <= 0)
             {
-                EmitSignal(SignalName.LocalPlayerPlaceBlock, _rayCastInfo);
                 _placeBlockTimer.Start(_placeBlockInterval);
                 _animatedCharacter.InteractCount += 1;
+
+                if (_rayCastInfo.IsColliding)
+                    EmitSignal(SignalName.LocalPlayerPlaceBlock, _rayCastInfo);
             }
         }
 

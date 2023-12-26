@@ -1,0 +1,84 @@
+[gd_scene load_steps=5 format=3 uid="uid://b77tc5oc53btn"]
+
+[ext_resource type="Texture2D" uid="uid://nogcns3yelyd" path="res://Resources/Textures/dirt.png" id="1_1krhb"]
+[ext_resource type="Script" path="res://Scripts/UI/LoadingUI.cs" id="1_pa4oq"]
+[ext_resource type="Theme" uid="uid://byb4vt4go5e02" path="res://Resources/MCTheme.tres" id="2_c6llu"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_onirp"]
+blend_mode = 3
+
+[node name="LoadingUi" type="Control" node_paths=PackedStringArray("_loadingLabel", "_returnToMainMenuButton")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pa4oq")
+_loadingLabel = NodePath("VBoxContainer/CenterContainer/LoadingLabel")
+_returnToMainMenuButton = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/ReturnToMainMenuButton")
+
+[node name="Background" type="TextureRect" parent="."]
+texture_filter = 1
+material = SubResource("CanvasItemMaterial_onirp")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(2, 2)
+texture = ExtResource("1_1krhb")
+stretch_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Upper" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.6
+
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.8
+
+[node name="LoadingLabel" type="Label" parent="VBoxContainer/CenterContainer"]
+layout_mode = 2
+theme = ExtResource("2_c6llu")
+theme_override_font_sizes/font_size = 16
+text = "加载中..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.5
+alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+alignment = 2
+
+[node name="ReturnToMainMenuButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme = ExtResource("2_c6llu")
+text = "返回主界面"
+
+[node name="Lower" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.9

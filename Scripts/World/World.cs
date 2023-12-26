@@ -98,8 +98,7 @@ namespace MC
         {
             while (_isUpdating)
                 await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
-            _isUpdating = false;
-
+            _isUpdating = true;
             _chunkUpdateTimer.Stop();
 
             UpdateRenderOrder();

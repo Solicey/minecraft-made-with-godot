@@ -1,8 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://uq6uks7lnks"]
+[gd_scene load_steps=7 format=3 uid="uid://uq6uks7lnks"]
 
 [ext_resource type="Script" path="res://Scripts/UI/UIManager.cs" id="1_3853v"]
+[ext_resource type="PackedScene" uid="uid://bx6ne8m2vbwrq" path="res://Scenes/UIScenes/MainMenuUI.tscn" id="2_qs77d"]
+[ext_resource type="PackedScene" uid="uid://ctt5x0kxtdvg8" path="res://Scenes/UIScenes/HostGameUI.tscn" id="3_ph1yo"]
+[ext_resource type="PackedScene" uid="uid://kawn17oe7nfl" path="res://Scenes/UIScenes/JoinGameUI.tscn" id="4_thkey"]
+[ext_resource type="PackedScene" uid="uid://b77tc5oc53btn" path="res://Scenes/UIScenes/LoadingUI.tscn" id="5_ulqys"]
+[ext_resource type="PackedScene" uid="uid://dyy41bvhjksjb" path="res://Scenes/UIScenes/InGameUI.tscn" id="6_58jkr"]
 
-[node name="UIManager" type="Control" node_paths=PackedStringArray("_mainMenuPanel", "_hostButton", "_joinButton", "_addressEntry", "_portEntry", "_nameEntry", "_seedEntry", "_gameLoadingPanel", "_loadingMessageLabel", "_returnToMenuButton")]
+[node name="UIManager" type="Control" node_paths=PackedStringArray("_mainMenuUI", "_hostGameUI", "_joinGameUI", "_loadingUI", "_inGameUI")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,111 +15,33 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_3853v")
-_mainMenuPanel = NodePath("MainMenuPanel")
-_hostButton = NodePath("MainMenuPanel/HostButton")
-_joinButton = NodePath("MainMenuPanel/JoinButton")
-_addressEntry = NodePath("MainMenuPanel/AddressEntry")
-_portEntry = NodePath("MainMenuPanel/PortEntry")
-_nameEntry = NodePath("MainMenuPanel/NameEntry")
-_seedEntry = NodePath("MainMenuPanel/SeedEntry")
-_gameLoadingPanel = NodePath("GameLoadingPanel")
-_loadingMessageLabel = NodePath("GameLoadingPanel/LoadingMessageLabel")
-_returnToMenuButton = NodePath("GameLoadingPanel/ReturnToMenuButton")
+_mainMenuUI = NodePath("MainMenuUI")
+_hostGameUI = NodePath("HostGameUi")
+_joinGameUI = NodePath("JoinGameUi")
+_loadingUI = NodePath("LoadingUi")
+_inGameUI = NodePath("InGameUI")
+_clientCreatingMsg = "建立连接中..."
+_clientCantCreateErrorMsg = "无法连接至服务器!"
+_clientDisconnectedErrorMsg = "与服务器的连接已断开!"
+_clientTimeoutErrorMsg = "连接超时!"
+_clientSyncingPlayerMsg = "同步玩家中..."
+_clientSyncingSeedMsg = "同步世界种子中..."
+_initingWorldMsg = "生成世界中..."
+_serverCreatingMsg = "建立服务器中..."
+_serverCantCreateErrorMsg = "无法建立服务器!"
+_serverSyncingPlayerMsg = "同步玩家中..."
 
-[node name="MainMenuPanel" type="Panel" parent="."]
+[node name="MainMenuUI" parent="." instance=ExtResource("2_qs77d")]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 
-[node name="HostButton" type="Button" parent="MainMenuPanel"]
-layout_mode = 0
-offset_left = 42.0
-offset_top = 249.0
-offset_right = 219.0
-offset_bottom = 321.0
-text = "Host"
-
-[node name="JoinButton" type="Button" parent="MainMenuPanel"]
-layout_mode = 0
-offset_left = 255.0
-offset_top = 255.0
-offset_right = 432.0
-offset_bottom = 327.0
-text = "Join"
-
-[node name="AddressEntry" type="TextEdit" parent="MainMenuPanel"]
-layout_mode = 0
-offset_left = 32.0
-offset_top = 53.0
-offset_right = 461.0
-offset_bottom = 125.0
-
-[node name="PortEntry" type="TextEdit" parent="MainMenuPanel"]
-layout_mode = 0
-offset_left = 496.0
-offset_top = 54.0
-offset_right = 661.0
-offset_bottom = 126.0
-
-[node name="NameEntry" type="TextEdit" parent="MainMenuPanel"]
-layout_mode = 0
-offset_left = 36.0
-offset_top = 148.0
-offset_right = 300.0
-offset_bottom = 220.0
-
-[node name="SeedEntry" type="TextEdit" parent="MainMenuPanel"]
-layout_mode = 0
-offset_left = 339.0
-offset_top = 150.0
-offset_right = 486.0
-offset_bottom = 222.0
-
-[node name="GameLoadingPanel" type="Panel" parent="."]
-visible = false
+[node name="HostGameUi" parent="." instance=ExtResource("3_ph1yo")]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 
-[node name="LoadingMessageLabel" type="Label" parent="GameLoadingPanel"]
+[node name="JoinGameUi" parent="." instance=ExtResource("4_thkey")]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -218.5
-offset_top = -48.0
-offset_right = 218.5
-offset_bottom = 48.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "hello!"
-horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="ReturnToMenuButton" type="Button" parent="GameLoadingPanel"]
+[node name="LoadingUi" parent="." instance=ExtResource("5_ulqys")]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -101.0
-offset_top = 59.0
-offset_right = 110.0
-offset_bottom = 159.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Return
-"
 
-[connection signal="pressed" from="MainMenuPanel/HostButton" to="." method="OnHostButtonPressed"]
-[connection signal="pressed" from="MainMenuPanel/JoinButton" to="." method="OnJoinButtonPressed"]
-[connection signal="pressed" from="GameLoadingPanel/ReturnToMenuButton" to="." method="OnReturnToMenuButtonPressed"]
+[node name="InGameUI" parent="." instance=ExtResource("6_58jkr")]
+layout_mode = 1

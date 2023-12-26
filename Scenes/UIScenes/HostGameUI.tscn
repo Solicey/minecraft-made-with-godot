@@ -18,8 +18,8 @@ script = ExtResource("1_7uxnt")
 _seedEntry = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer/SeedEntry")
 _portEntry = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer2/PortEntry")
 _nameEntry = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer3/NameEntry")
-_hostGameButton = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer4/HostGameButton")
-_returnToMainMenuButton = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer4/ReturnToMainMenuButton")
+_hostGameButton = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/HostGameButton")
+_returnToMainMenuButton = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/ReturnToMainMenuButton")
 
 [node name="Background" type="TextureRect" parent="."]
 texture_filter = 1
@@ -57,7 +57,7 @@ size_flags_stretch_ratio = 0.8
 [node name="Label" type="Label" parent="VBoxContainer/CenterContainer"]
 layout_mode = 2
 theme = ExtResource("3_4g4rt")
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "创建游戏"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -127,19 +127,19 @@ theme = ExtResource("3_4g4rt")
 placeholder_text = "Steve"
 max_length = 10
 
-[node name="HSplitContainer4" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 alignment = 1
 
-[node name="ReturnToMainMenuButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer4"]
+[node name="ReturnToMainMenuButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 theme = ExtResource("3_4g4rt")
 text = "返回主界面"
 
-[node name="HostGameButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer4"]
+[node name="HostGameButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0

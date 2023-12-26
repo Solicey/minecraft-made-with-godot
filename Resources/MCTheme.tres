@@ -57,7 +57,7 @@ axis_stretch_vertical = 1
 
 [resource]
 default_font = ExtResource("4_5uuem")
-default_font_size = 16
+default_font_size = 12
 Button/styles/disabled = SubResource("StyleBoxTexture_euscd")
 Button/styles/focus = SubResource("StyleBoxTexture_hduy2")
 Button/styles/hover = SubResource("StyleBoxTexture_hduy2")

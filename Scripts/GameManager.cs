@@ -7,7 +7,7 @@ namespace MC
     public partial class GameStartInfo : GodotObject
     {
         public string Address { get; set; }
-        public int Port { get; set; }
+        public uint Port { get; set; }
         public string PlayerName { get; set; }
         public uint Seed { get; set; }
     }

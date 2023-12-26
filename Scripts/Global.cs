@@ -10,6 +10,8 @@ namespace MC
 
         public static uint DefaultPort { get; private set; } = 8848;
 
+        public static string DefaultAddress { get; private set; } = "127.0.0.1";
+
         public static string DefaultName { get; private set; } = "Steve";
 
         public static byte[] AuthData { get; private set; } = new byte[] { 20, 3, 12, 31 };
@@ -30,9 +32,9 @@ namespace MC
 
         public static string WorldGroup { get; private set; } = "WorldGroup";
 
-        public static uint MaxTimeStampValue { get; private set; } = 100;
+        public static uint MaxTimeStampValue { get; private set; } = 1024;
 
-        public static uint MaxTimeStampDelta { get; private set; } = 50;
+        public static uint MaxTimeStampDelta { get; private set; } = 512;
 
         public static int RpcBlockVariantUnitCount { get; private set; } = 5;
 
