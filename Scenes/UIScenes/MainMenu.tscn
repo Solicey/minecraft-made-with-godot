@@ -48,51 +48,53 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Padding2" type="Control" parent="TitleScreen"]
-custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.6
 
 [node name="CenterContainer" type="CenterContainer" parent="TitleScreen"]
-custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="Logo" type="TextureRect" parent="TitleScreen/CenterContainer"]
-custom_minimum_size = Vector2(0, 110)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 texture = ExtResource("3_crwfk")
 expand_mode = 3
 stretch_mode = 4
 
-[node name="HBoxContainer" type="HBoxContainer" parent="TitleScreen"]
-custom_minimum_size = Vector2(0, 320)
+[node name="Padding3" type="Control" parent="TitleScreen"]
 layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TitleScreen"]
+layout_mode = 2
+size_flags_vertical = 3
 alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="TitleScreen/HBoxContainer"]
-custom_minimum_size = Vector2(350, 0)
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-theme_override_constants/separation = 20
-alignment = 1
+theme_override_constants/separation = 5
 
 [node name="CreateGameButton" type="Button" parent="TitleScreen/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme = ExtResource("4_eqyk1")
 text = "创建游戏"
 
 [node name="JoinGameButton" type="Button" parent="TitleScreen/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme = ExtResource("4_eqyk1")
 text = "加入游戏"
 
 [node name="OptionsButton" type="Button" parent="TitleScreen/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme = ExtResource("4_eqyk1")
+disabled = true
 text = "选项..."
 
 [node name="QuitButton" type="Button" parent="TitleScreen/HBoxContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme = ExtResource("4_eqyk1")
 text = "退出游戏"
@@ -100,3 +102,4 @@ text = "退出游戏"
 [node name="Padding" type="Control" parent="TitleScreen"]
 layout_mode = 2
 size_flags_vertical = 3
+size_flags_stretch_ratio = 1.2

@@ -1,11 +1,12 @@
-[gd_resource type="Theme" load_steps=7 format=3 uid="uid://byb4vt4go5e02"]
+[gd_resource type="Theme" load_steps=8 format=3 uid="uid://byb4vt4go5e02"]
 
-[ext_resource type="Texture2D" uid="uid://cw5g0ax5m48bk" path="res://Resources/Textures/UI/button_inactive.png" id="1_h768c"]
-[ext_resource type="Texture2D" uid="uid://dclogfnkj4mlg" path="res://Resources/Textures/UI/button_focus.png" id="2_e01bu"]
-[ext_resource type="Texture2D" uid="uid://b3a4pskmxw5fe" path="res://Resources/Textures/UI/button_normal.png" id="3_0itjj"]
+[ext_resource type="Texture2D" uid="uid://46vnp82lkflj" path="res://Resources/Textures/UI/button_disabled.png" id="1_7yet2"]
+[ext_resource type="Texture2D" uid="uid://ibnbryfqbhig" path="res://Resources/Textures/UI/button_highlighted.png" id="2_8j0fe"]
+[ext_resource type="Texture2D" uid="uid://c7efaky7f46od" path="res://Resources/Textures/UI/button.png" id="3_co4rn"]
+[ext_resource type="FontFile" uid="uid://dx3y0cdjlm6cr" path="res://Resources/Fonts/Minecraft AE.ttf" id="4_5uuem"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_euscd"]
-texture = ExtResource("1_h768c")
+texture = ExtResource("1_7yet2")
 texture_margin_left = 1.0
 texture_margin_top = 1.0
 texture_margin_right = 1.0
@@ -14,7 +15,7 @@ axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hduy2"]
-texture = ExtResource("2_e01bu")
+texture = ExtResource("2_8j0fe")
 texture_margin_left = 2.0
 texture_margin_top = 2.0
 texture_margin_right = 2.0
@@ -23,7 +24,7 @@ axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_0sdam"]
-texture = ExtResource("3_0itjj")
+texture = ExtResource("3_co4rn")
 texture_margin_left = 2.0
 texture_margin_top = 2.0
 texture_margin_right = 2.0
@@ -33,6 +34,10 @@ axis_stretch_vertical = 1
 region_rect = Rect2(0, 0, 200, 20)
 
 [resource]
+default_font = ExtResource("4_5uuem")
+default_font_size = 12
 Button/styles/disabled = SubResource("StyleBoxTexture_euscd")
+Button/styles/focus = SubResource("StyleBoxTexture_hduy2")
 Button/styles/hover = SubResource("StyleBoxTexture_hduy2")
 Button/styles/normal = SubResource("StyleBoxTexture_0sdam")
+Button/styles/pressed = SubResource("StyleBoxTexture_hduy2")

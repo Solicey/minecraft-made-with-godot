@@ -21,6 +21,10 @@ Global="*res://Scripts/Global.cs"
 BlockManager="*res://Scripts/Block/BlockManager.cs"
 RpcFunctions="*res://Scripts/Network/RPCFunctions.cs"
 
+[display]
+
+window/stretch/scale=2.0
+
 [dotnet]
 
 project/assembly_name="Minecraft"
