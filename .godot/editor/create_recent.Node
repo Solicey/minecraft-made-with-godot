@@ -1,9 +1,11 @@
+Camera3D
+Panel
+HBoxContainer
 Control
 VBoxContainer
 Button
 TextureRect
 CenterContainer
-HBoxContainer
 Label
 LineEdit
 TextEdit
@@ -11,4 +13,3 @@ HSplitContainer
 SubViewport
 DirectionalLight3D
 WorldEnvironment
-AspectRatioContainer

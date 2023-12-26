@@ -93,7 +93,6 @@ namespace MC
                 return;
 
             _global.LocalPlayer = this;  // Should send signal
-            _global.GameStateChanged += OnGameStateChanged;
 
             _animatedCharacter = GetNode<AnimatedCharacter>("%AnimatedCharacter");
         }
@@ -104,9 +103,6 @@ namespace MC
                 return;
 
             GD.Print("Init local player!");
-
-            _camera.Visible = true;
-            _camera.MakeCurrent();
 
             NameTag = _global.GameStartInfo.PlayerName;
             Position = Global.PlayerSpawnPosition;
@@ -207,17 +203,12 @@ namespace MC
 
             _jumping = false;
             _moveDirection = Vector2.Zero;
-
-            if (Input.IsActionJustPressed("Escape"))
-            {
-                if (_global.GameState == GameState.InGameActive)
-                    _global.GameState = GameState.InGamePaused;
-                else if (_global.GameState == GameState.InGamePaused)
-                    _global.GameState = GameState.InGameActive;
-            }
             
             if (_global.GameState != GameState.InGameActive)
+            {
+                _animatedCharacter.StartIdleWalkBlendAnimation(_moveDirection.Length());
                 return;
+            }
 
             if (@event is InputEventMouseMotion mouseMotion)
             {
@@ -237,20 +228,6 @@ namespace MC
         bool InGame()
         {
             return _global.GameState == GameState.InGameActive || _global.GameState == GameState.InGamePaused;
-        }
-
-        void OnGameStateChanged(int state)
-        {
-            var gameState = (GameState)state;
-            switch (gameState)
-            {
-                case GameState.InGameActive:
-                    Input.MouseMode = Input.MouseModeEnum.Captured;
-                    break;
-                case GameState.InGamePaused:
-                    Input.MouseMode = Input.MouseModeEnum.Visible;
-                    break;
-            }
         }
 
         Vector3 Walk(float delta)
@@ -313,6 +290,11 @@ namespace MC
             var footOccupiedBlockWorldPos = World.WorldPosToBlockWorldPos(Position - new Vector3(0, _playerHeight / 2f, 0));
             for (int y = footOccupiedBlockWorldPos.Y; y <= headOccupiedBlockWorldPos.Y; y++)
                 OccupiedBlockWorldPositions.Add(new Vector3I(headOccupiedBlockWorldPos.X, y, headOccupiedBlockWorldPos.Z));
+        }
+
+        public void MakeCameraCurrent()
+        {
+            _camera.MakeCurrent();
         }
     }
 }

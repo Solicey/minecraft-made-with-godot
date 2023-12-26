@@ -6,3 +6,4 @@ res://Scenes/UIScenes/LoadingUI.tscn
 res://Scenes/GameManager.tscn
 res://Scenes/UIScenes/InGameUI.tscn
 res://Scenes/UIScenes/UIManager.tscn
+res://Scenes/Player.tscn

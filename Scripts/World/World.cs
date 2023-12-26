@@ -28,6 +28,7 @@ namespace MC
         Timer _chunkUpdateTimer = new();
 
         bool _isUpdating = false;
+        bool _hasInit = false;
 
         [Signal] public delegate void UpdateChunkDoneEventHandler();
         [Signal] public delegate void ReceivedBlockVariationEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, int blockType, bool shallCompareTimeStamp, uint timeStamp);
@@ -50,6 +51,8 @@ namespace MC
                 _global.LocalPlayer.LocalPlayerBreakBlock += OnLocalPlayerBreakBlock;
                 _global.LocalPlayer.LocalPlayerPlaceBlock += OnLocalPlayerPlaceBlock;
             };
+
+            _global.GameStateChanged += OnGameStateChanged;
 
             _rpcFunctions.ReceivedBlockVariation += OnReceivedBlockVariation;
             ReceivedBlockVariation += OnReceivedBlockVariation;
@@ -96,6 +99,8 @@ namespace MC
 
         public async Task<bool> Init()
         {
+            await Reset();
+
             while (_isUpdating)
                 await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
             _isUpdating = true;
@@ -104,10 +109,6 @@ namespace MC
             UpdateRenderOrder();
 
             var centerChunkPos = WorldPosToChunkPos(Global.PlayerSpawnPosition);
-
-            foreach (var chunk in _chunkPosMap.Values)
-                chunk?.QueueFree();
-            _chunkPosMap.Clear();
 
             List<Task> tasks = new();
             for (int i = 0; i < Global.RenderChunkCount; i++)
@@ -145,10 +146,29 @@ namespace MC
             GD.Print("World create done");
 
             _isUpdating = false;
+            _hasInit = true;
             EmitSignal(SignalName.UpdateChunkDone);
             _chunkUpdateTimer.Start(_chunkUpdateInterval);
 
             return true;
+        }
+
+        async Task Reset()
+        {
+            while (_isUpdating)
+                await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
+            _isUpdating = true;
+            _hasInit = false;
+
+            foreach (var chunk in _chunkPosMap.Values)
+                chunk?.QueueFree();
+            _chunkPosMap.Clear();
+
+            GD.Print("Reset done!");
+
+            _isUpdating = false;
+            EmitSignal(SignalName.UpdateChunkDone);
+            _chunkUpdateTimer.Stop();
         }
 
         void GenerateSimpleTerrain(Vector2I chunkPos, BlockType[,,] blockArray)
@@ -300,7 +320,7 @@ namespace MC
 
         async void OnChunkUpdateTimerTimeout()
         {
-            if (_isUpdating)
+            if (_isUpdating || !_hasInit)
                 return;
             _isUpdating = true;
             //GD.Print("Timer update begin!");
@@ -343,6 +363,8 @@ namespace MC
             BlockType type = (BlockType)blockType;
             while (_isUpdating)
                 await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
+            if (!_hasInit)
+                return;
             _isUpdating = true;
 
             if (!_chunkPosMap.TryGetValue(chunkPos, out Chunk chunk) ||
@@ -382,6 +404,8 @@ namespace MC
         {
             while (_isUpdating)
                 await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
+            if (!_hasInit)
+                return;
 
             if (!_chunkPosMap.TryGetValue(info.ChunkPos, out Chunk chunk))
                 return;
@@ -401,6 +425,8 @@ namespace MC
         {
             while (_isUpdating)
                 await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
+            if (!_hasInit)
+                return;
 
             if (!_chunkPosMap.TryGetValue(info.ChunkPos, out Chunk chunk))
                 return;
@@ -425,8 +451,7 @@ namespace MC
             if (!_blockManager.IsPlacable(hitBlockType, BlockType.Stone, norm))
                 return;
 
-            var playerList = GetTree().GetNodesInGroup(Global.PlayerGroup);
-            foreach (var node in playerList)
+            foreach (var node in GetTree().GetNodesInGroup(Global.PlayerGroup))
             {
                 var player = (Player)node;
                 if (player.OccupiedBlockWorldPositions.Contains(newBlockWorldPos))
@@ -458,6 +483,19 @@ namespace MC
                         }
                     }
                 }
+            }
+        }
+
+        async void OnGameStateChanged(int state)
+        {
+            var gameState = (GameState)state;
+            GD.Print($"Game state: {gameState}");
+
+            switch (gameState)
+            {
+                case GameState.InMainMenu:
+                    await Reset();
+                    break;
             }
         }
     }

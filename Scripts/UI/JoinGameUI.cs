@@ -36,5 +36,10 @@ namespace MC
                 EmitSignal(SignalName.ReturnToMainMenuButtonPressed);
             };
         }
+
+        public override void _EnterTree()
+        {
+            Input.MouseMode = Input.MouseModeEnum.Visible;
+        }
     }
 }

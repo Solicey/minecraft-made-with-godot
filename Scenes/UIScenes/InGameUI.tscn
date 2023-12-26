@@ -1,9 +1,17 @@
-[gd_scene load_steps=3 format=3 uid="uid://dyy41bvhjksjb"]
+[gd_scene load_steps=6 format=3 uid="uid://dyy41bvhjksjb"]
 
 [ext_resource type="Script" path="res://Scripts/UI/InGameUI.cs" id="1_70680"]
 [ext_resource type="Texture2D" uid="uid://dns625iiwqivc" path="res://Resources/Textures/UI/crosshair.png" id="1_utyxj"]
+[ext_resource type="Theme" uid="uid://byb4vt4go5e02" path="res://Resources/MCTheme.tres" id="3_ua1e8"]
 
-[node name="InGameUI" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uhflp"]
+bg_color = Color(0.12549, 0.12549, 0.12549, 0.588235)
+
+[sub_resource type="Theme" id="Theme_4xn2k"]
+Panel/styles/panel = SubResource("StyleBoxFlat_uhflp")
+
+[node name="InGameUI" type="Control" node_paths=PackedStringArray("_pausePanel", "_continueGameButton", "_optionsButton", "_returnToMainMenuButton")]
+texture_filter = 1
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,6 +19,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_70680")
+_pausePanel = NodePath("PausePanel")
+_continueGameButton = NodePath("PausePanel/VBoxContainer/HBoxContainer/VBoxContainer/ContinueGameButton")
+_optionsButton = NodePath("PausePanel/VBoxContainer/HBoxContainer/VBoxContainer/OptionsButton")
+_returnToMainMenuButton = NodePath("PausePanel/VBoxContainer/HBoxContainer/VBoxContainer/ReturnToMainMenuButton")
 
 [node name="Crosshair" type="TextureRect" parent="."]
 texture_filter = 1
@@ -28,3 +40,60 @@ grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.4, 0.4)
 texture = ExtResource("1_utyxj")
+
+[node name="PausePanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_4xn2k")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PausePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Upper" type="Control" parent="PausePanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PausePanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PausePanel/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_constants/separation = 5
+alignment = 1
+
+[node name="ContinueGameButton" type="Button" parent="PausePanel/VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+focus_mode = 0
+theme = ExtResource("3_ua1e8")
+text = "继续游戏"
+
+[node name="OptionsButton" type="Button" parent="PausePanel/VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+focus_mode = 0
+theme = ExtResource("3_ua1e8")
+text = "选项..."
+
+[node name="ReturnToMainMenuButton" type="Button" parent="PausePanel/VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+focus_mode = 0
+theme = ExtResource("3_ua1e8")
+text = "返回主菜单"
+
+[node name="Lower" type="Control" parent="PausePanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3

@@ -88,7 +88,7 @@ namespace MC
                 EmitSignal(SignalName.GameStateChanged, (int)value);
             }
         }
-        GameState _gameState;
+        GameState _gameState = GameState.InMainMenu;
 
         public async Task<bool> WaitForNewGameState(GameState targetState)
         {

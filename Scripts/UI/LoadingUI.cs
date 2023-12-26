@@ -31,6 +31,7 @@ namespace MC
         public override void _EnterTree()
         {
             _returnToMainMenuButton.Hide();
+            Input.MouseMode = Input.MouseModeEnum.Visible;
         }
     }
 

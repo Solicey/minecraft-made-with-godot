@@ -123,7 +123,9 @@ namespace MC
             GameState gameState = (GameState)state;
             switch (gameState)
             {
-                
+                case GameState.InMainMenu:
+                    Reset();
+                    break;
             }
         }
     }

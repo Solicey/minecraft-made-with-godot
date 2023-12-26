@@ -1,4 +1,4 @@
-using Godot;
+﻿using Godot;
 using System;
 
 namespace MC
@@ -15,6 +15,10 @@ namespace MC
         [Export] LoadingUI _loadingUI;
         [Export] InGameUI _inGameUI;
 
+        [Export] Camera3D _panoramaCamera;
+        [Export] Camera3D _canvasCamera;
+        [Export] Node3D _head;
+
         [Export] string _clientCreatingMsg;
         [Export] string _clientCantCreateErrorMsg;
         [Export] string _clientDisconnectedErrorMsg;
@@ -26,26 +30,27 @@ namespace MC
         [Export] string _serverCantCreateErrorMsg;
         [Export] string _serverSyncingPlayerMsg;
 
+        [Export] float _headRotateSpeed = -0.03f;
+
         Global _global;
+        Control _lastControl = null;
         Control _currentControl = null;
 
         public override void _Ready()
         {
             _global = GetNode<Global>("/root/Global");
-
             _global.GameStateChanged += OnGameStateChanged;
 
-            ChangeCurrentControlTo(_mainMenuUI);
+            _global.GameState = GameState.InMainMenu;
 
-            _mainMenuUI.HostGameButtonPressed += () => { ChangeCurrentControlTo(_hostGameUI); };
+            _mainMenuUI.HostGameButtonPressed += () => { _global.GameState = GameState.InHostGamePage; };
 
-            _mainMenuUI.JoinGameButtonPressed += () => { ChangeCurrentControlTo(_joinGameUI); };
+            _mainMenuUI.JoinGameButtonPressed += () => { _global.GameState = GameState.InJoinGamePage; };
 
-            _hostGameUI.ReturnToMainMenuButtonPressed += () => { ChangeCurrentControlTo(_mainMenuUI); };
+            _hostGameUI.ReturnToMainMenuButtonPressed += () => { _global.GameState = GameState.InMainMenu; };
 
             _hostGameUI.HostGameButtonPressed += (uint seed, uint port, string name) =>
             {
-                ChangeCurrentControlTo(_loadingUI);
                 EmitSignal(SignalName.HostGame, new GameStartInfo
                 {
                     Seed = seed,
@@ -54,11 +59,10 @@ namespace MC
                 });
             };
 
-            _joinGameUI.ReturnToMainMenuButtonPressed += () => { ChangeCurrentControlTo(_mainMenuUI); };
+            _joinGameUI.ReturnToMainMenuButtonPressed += () => { _global.GameState = GameState.InMainMenu; };
 
             _joinGameUI.JoinGameButtonPressed += (string addr, uint port, string name) =>
             {
-                ChangeCurrentControlTo(_loadingUI);
                 EmitSignal(SignalName.JoinGame, new GameStartInfo
                 {
                     Address = addr,
@@ -67,25 +71,64 @@ namespace MC
                 });
             };
 
-            _loadingUI.ReturnToMainMenuButtonPressed += () => { ChangeCurrentControlTo(_mainMenuUI); };
+            _loadingUI.ReturnToMainMenuButtonPressed += () => { _global.GameState = GameState.InMainMenu; };
+
+            _inGameUI.ReturnToMainMenuButtonPressed += () => { _global.GameState = GameState.InMainMenu; };
+        }
+
+        public override void _Process(double delta)
+        {
+            if (_currentControl == _mainMenuUI)
+            {
+                _head.RotateY(_headRotateSpeed * (float)delta);
+            }
         }
 
         void ChangeCurrentControlTo(Control control)
         {
+
+            _lastControl = _currentControl;
+
+            if (_currentControl == control)
+                return;
+
             foreach (var child in GetChildren())
-                RemoveChild(child);
+                if (child is Control)
+                    RemoveChild(child);
 
             _currentControl = control;
             AddChild(_currentControl);
-
-            if (_currentControl == _mainMenuUI)
-                _global.GameState = GameState.InMainMenu;
         }
 
         void OnGameStateChanged(int state)
         {
             var gameState = (GameState)state;
             GD.Print($"Game state: {gameState}");
+
+            switch (gameState)
+            {
+                case GameState.InMainMenu:
+                    _panoramaCamera.MakeCurrent();
+                    break;
+                case GameState.InHostGamePage:
+                    ChangeCurrentControlTo(_hostGameUI);
+                    _canvasCamera.MakeCurrent();
+                    break;
+                
+                case GameState.ClientConnecting:
+                case GameState.ClientCantCreate:
+                case GameState.ClientTimeout:
+                case GameState.ClientDisconnected:
+                case GameState.ClientConnected_SyncingPlayer:
+                case GameState.ClientPlayerSynced_SyncingWorldSeed:
+                case GameState.InitingWorld:
+                case GameState.ServerCreating:
+                case GameState.ServerCantCreate:
+                case GameState.ServerCreated_SyncingPlayer:
+                    ChangeCurrentControlTo(_loadingUI);
+                    _canvasCamera.MakeCurrent();
+                    break;
+            }
 
             switch (gameState)
             {
@@ -120,6 +163,8 @@ namespace MC
                     _loadingUI.SetLoadingMessage(_serverSyncingPlayerMsg);
                     break;
                 case GameState.InGameActive:
+                case GameState.InGamePaused:
+                    _global.LocalPlayer?.MakeCameraCurrent();
                     ChangeCurrentControlTo(_inGameUI);
                     break;
             }

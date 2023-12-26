@@ -32,9 +32,9 @@ namespace MC
             _rpcFunctions.ReceivedBlockVaryRequest += OnReceivedBlockVaryRequest;
             _rpcFunctions.ReceivedSendSyncChunkRequest += OnReceivedSendSyncChunkRequest;
         }
-        public bool CreateServer(uint port)
+        public async Task<bool> CreateServer(uint port)
         {
-            Reset();
+            await Reset();
 
             _global.GameState = GameState.ServerCreating;
 
@@ -61,20 +61,29 @@ namespace MC
             GD.Print($"Create server on port {port}!");
 
             _global.GameState = GameState.ServerCreated_SyncingPlayer;
-            _multiplayerSpawner.Spawn(Global.ServerId);
+
+            _playerDict[Global.ServerId] = _multiplayerSpawner.Spawn(Global.ServerId);
 
             return true;
         }
 
-        void Reset()
+        async Task Reset()
         {
+            foreach (var player in _playerDict.Values)
+                player.QueueFree();
+            _playerDict.Clear();
+
+            while (_isUpdatingVarDict)
+                await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkVariationDictDone)); });
+            _chunkVariationDict.Clear();
+            EmitSignal(SignalName.UpdateChunkVariationDictDone);
+
             if (_peer != null )
             {
                 _peer.Host?.Destroy();
                 _peer = null;
             }
             _multiplayer = null;
-            _playerDict.Clear();
         }
 
         void OnPeerConnected(long id)
@@ -124,10 +133,7 @@ namespace MC
                 return;
 
             while (_isUpdatingVarDict)
-                await Task.Run(() =>
-                {
-                    CallDeferred(nameof(WaitForUpdateChunkVariationDictDone));
-                });
+                await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkVariationDictDone)); });
             _isUpdatingVarDict = true;
 
             BlockType type = (BlockType)blockType;
@@ -155,22 +161,21 @@ namespace MC
             EmitSignal(SignalName.UpdateChunkVariationDictDone);
         }
 
-        void OnGameStateChanged(int state)
+        async void OnGameStateChanged(int state)
         {
             GameState gameState = (GameState)state;
             switch (gameState)
             {
-                
+                case GameState.InMainMenu:
+                    await Reset();
+                    break;
             }
         }
 
         async void OnReceivedSendSyncChunkRequest(int id, Vector2I chunkPos)
         {
             while (_isUpdatingVarDict)
-                await Task.Run(() =>
-                {
-                    CallDeferred(nameof(WaitForUpdateChunkVariationDictDone));
-                });
+                await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkVariationDictDone)); });
             _isUpdatingVarDict = true;
 
             if (!_chunkVariationDict.TryGetValue(chunkPos, out var chunkVariation))

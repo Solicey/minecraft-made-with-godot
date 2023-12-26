@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://uq6uks7lnks"]
+[gd_scene load_steps=13 format=3 uid="uid://uq6uks7lnks"]
 
 [ext_resource type="Script" path="res://Scripts/UI/UIManager.cs" id="1_3853v"]
 [ext_resource type="PackedScene" uid="uid://bx6ne8m2vbwrq" path="res://Scenes/UIScenes/MainMenuUI.tscn" id="2_qs77d"]
@@ -6,8 +6,24 @@
 [ext_resource type="PackedScene" uid="uid://kawn17oe7nfl" path="res://Scenes/UIScenes/JoinGameUI.tscn" id="4_thkey"]
 [ext_resource type="PackedScene" uid="uid://b77tc5oc53btn" path="res://Scenes/UIScenes/LoadingUI.tscn" id="5_ulqys"]
 [ext_resource type="PackedScene" uid="uid://dyy41bvhjksjb" path="res://Scenes/UIScenes/InGameUI.tscn" id="6_58jkr"]
+[ext_resource type="Texture2D" uid="uid://b4l0amiolmybk" path="res://Resources/Textures/panorama_image.png" id="7_c35cd"]
 
-[node name="UIManager" type="Control" node_paths=PackedStringArray("_mainMenuUI", "_hostGameUI", "_joinGameUI", "_loadingUI", "_inGameUI")]
+[sub_resource type="Environment" id="Environment_n6qcw"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_ojtuu"]
+panorama = ExtResource("7_c35cd")
+
+[sub_resource type="Sky" id="Sky_duy7x"]
+sky_material = SubResource("PanoramaSkyMaterial_ojtuu")
+
+[sub_resource type="Environment" id="Environment_hgta2"]
+background_mode = 2
+sky = SubResource("Sky_duy7x")
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_apekk"]
+dof_blur_far_enabled = true
+
+[node name="UIManager" type="Control" node_paths=PackedStringArray("_mainMenuUI", "_hostGameUI", "_joinGameUI", "_loadingUI", "_inGameUI", "_panoramaCamera", "_canvasCamera", "_head")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,6 +36,9 @@ _hostGameUI = NodePath("HostGameUi")
 _joinGameUI = NodePath("JoinGameUi")
 _loadingUI = NodePath("LoadingUi")
 _inGameUI = NodePath("InGameUI")
+_panoramaCamera = NodePath("Head/PanoramaCamera")
+_canvasCamera = NodePath("CanvasCamera")
+_head = NodePath("Head")
 _clientCreatingMsg = "建立连接中..."
 _clientCantCreateErrorMsg = "无法连接至服务器!"
 _clientDisconnectedErrorMsg = "与服务器的连接已断开!"
@@ -45,3 +64,16 @@ layout_mode = 1
 
 [node name="InGameUI" parent="." instance=ExtResource("6_58jkr")]
 layout_mode = 1
+
+[node name="CanvasCamera" type="Camera3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+environment = SubResource("Environment_n6qcw")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+
+[node name="PanoramaCamera" type="Camera3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 0.996195, 0.0871557, 0, -0.0871557, 0.996195, 0, 0, 0)
+environment = SubResource("Environment_hgta2")
+attributes = SubResource("CameraAttributesPractical_apekk")
+fov = 120.0

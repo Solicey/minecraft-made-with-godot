@@ -15,6 +15,9 @@ namespace MC
     public enum GameState
     {
         InMainMenu,
+        InHostGamePage,
+        InJoinGamePage,
+        InOptionsPage,
         ClientConnecting,
         ClientCantCreate,
         ClientTimeout,
@@ -69,7 +72,7 @@ namespace MC
             _global.GameStartInfo = info;
 
             GD.Print("On host game!");
-            if (!_server.CreateServer(info.Port) ||
+            if (!await _server.CreateServer(info.Port) ||
                 !await _global.WaitForNewGameState(GameState.ServerPlayerSynced))
                 return;
 

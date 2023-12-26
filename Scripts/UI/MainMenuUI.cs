@@ -9,8 +9,6 @@ namespace MC
         [Signal] public delegate void JoinGameButtonPressedEventHandler();
         [Signal] public delegate void OptionsButtonPressedEventHandler();
 
-        [Export] Camera3D _camera;
-        [Export] Node3D _head;
         [Export] Control _splash;
 
         [Export] Button _hostGameButton;
@@ -18,7 +16,6 @@ namespace MC
         [Export] Button _optionsButton;
         [Export] Button _quitButton;
 
-        [Export] float _headRotateSpeed = -0.03f;
         [Export] Vector2 _splashMaxScale = new(1f, 1f);
         [Export] Vector2 _splashMinScale = new(0.7f, 0.7f);
         [Export] float _splashDuration = 1.0f;
@@ -43,12 +40,7 @@ namespace MC
 
         public override void _EnterTree()
         {
-            _camera.MakeCurrent();
-        }
-
-        public override void _Process(double delta)
-        {
-            _head.RotateY(_headRotateSpeed * (float)delta);
+            Input.MouseMode = Input.MouseModeEnum.Visible;
         }
     }
 }
