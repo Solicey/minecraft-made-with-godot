@@ -6,6 +6,12 @@ namespace MC
 {
     public partial class Global : Node
     {
+        public static uint DefaultSeed { get; private set; } = 20031231;
+
+        public static uint DefaultPort { get; private set; } = 8848;
+
+        public static string DefaultName { get; private set; } = "Steve";
+
         public static byte[] AuthData { get; private set; } = new byte[] { 20, 3, 12, 31 };
 
         public static int ServerId { get; private set; } = 1;

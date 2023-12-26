@@ -1,0 +1,152 @@
+[gd_scene load_steps=9 format=3 uid="uid://bx6ne8m2vbwrq"]
+
+[ext_resource type="Script" path="res://Scripts/UI/MainMenuUI.cs" id="1_b7v1y"]
+[ext_resource type="Texture2D" uid="uid://b4l0amiolmybk" path="res://Resources/Textures/panorama_image.png" id="2_j21x2"]
+[ext_resource type="Texture2D" uid="uid://0enqrj81ad4e" path="res://Resources/Textures/UI/logo.png" id="3_ovx36"]
+[ext_resource type="Theme" uid="uid://byb4vt4go5e02" path="res://Resources/MCTheme.tres" id="4_5j1ba"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_n836d"]
+panorama = ExtResource("2_j21x2")
+
+[sub_resource type="Sky" id="Sky_duy7x"]
+sky_material = SubResource("PanoramaSkyMaterial_n836d")
+
+[sub_resource type="Environment" id="Environment_htyhm"]
+background_mode = 2
+sky = SubResource("Sky_duy7x")
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_n145c"]
+dof_blur_far_enabled = true
+
+[node name="MainMenuUI" type="Control" node_paths=PackedStringArray("_camera", "_head", "_splash", "_hostGameButton", "_joinGameButton", "_optionsButton", "_quitButton")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_b7v1y")
+_camera = NodePath("Head/Camera3D")
+_head = NodePath("Head")
+_splash = NodePath("TitleScreen/CenterContainer/Logo/SplashHolder/SplashText")
+_hostGameButton = NodePath("TitleScreen/HBoxContainer/VBoxContainer/HostGameButton")
+_joinGameButton = NodePath("TitleScreen/HBoxContainer/VBoxContainer/JoinGameButton")
+_optionsButton = NodePath("TitleScreen/HBoxContainer/VBoxContainer/OptionsButton")
+_quitButton = NodePath("TitleScreen/HBoxContainer/VBoxContainer/QuitButton")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 0.996195, 0.0871557, 0, -0.0871557, 0.996195, 0, 0, 0)
+environment = SubResource("Environment_htyhm")
+attributes = SubResource("CameraAttributesPractical_n145c")
+fov = 120.0
+
+[node name="TitleScreen" type="VBoxContainer" parent="."]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Upper" type="Control" parent="TitleScreen"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.6
+
+[node name="CenterContainer" type="CenterContainer" parent="TitleScreen"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Logo" type="TextureRect" parent="TitleScreen/CenterContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+texture = ExtResource("3_ovx36")
+expand_mode = 3
+stretch_mode = 4
+
+[node name="SplashHolder" type="Control" parent="TitleScreen/CenterContainer/Logo"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0909119
+offset_right = 0.0909119
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="SplashText" type="Label" parent="TitleScreen/CenterContainer/Logo/SplashHolder"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -60.3364
+offset_top = -18.0745
+offset_right = 61.6636
+offset_bottom = -2.07455
+grow_horizontal = 2
+grow_vertical = 2
+rotation = -0.174533
+pivot_offset = Vector2(57.2445, 8.8299)
+theme = ExtResource("4_5j1ba")
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Made with C# !"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Middle" type="Control" parent="TitleScreen"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TitleScreen"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TitleScreen/HBoxContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="HostGameButton" type="Button" parent="TitleScreen/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+focus_mode = 0
+theme = ExtResource("4_5j1ba")
+text = "创建游戏"
+
+[node name="JoinGameButton" type="Button" parent="TitleScreen/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+focus_mode = 0
+theme = ExtResource("4_5j1ba")
+text = "加入游戏"
+
+[node name="OptionsButton" type="Button" parent="TitleScreen/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+focus_mode = 0
+theme = ExtResource("4_5j1ba")
+text = "选项..."
+
+[node name="QuitButton" type="Button" parent="TitleScreen/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+focus_mode = 0
+theme = ExtResource("4_5j1ba")
+text = "退出游戏"
+
+[node name="Lower" type="Control" parent="TitleScreen"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.2

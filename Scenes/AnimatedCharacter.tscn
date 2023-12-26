@@ -165,8 +165,8 @@ _animationTree = NodePath("AnimationTree")
 
 [node name="Skeleton3D" parent="Armature" index="0"]
 unique_name_in_owner = true
-bones/2/rotation = Quaternion(0.999995, 0.00311167, -7.54975e-08, 1.67264e-09)
-bones/3/rotation = Quaternion(0.999995, -0.00311167, -7.54975e-08, -1.67264e-09)
+bones/2/rotation = Quaternion(0.99993, 0.011801, -7.54927e-08, 1.01649e-09)
+bones/3/rotation = Quaternion(0.99993, -0.011801, -7.54927e-08, -1.01649e-09)
 
 [node name="Head" parent="Armature/Skeleton3D" index="0"]
 surface_material_override/0 = ExtResource("3_xd4iq")

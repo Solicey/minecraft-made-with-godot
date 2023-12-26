@@ -13,7 +13,7 @@ config_version=5
 config/name="Minecraft"
 run/main_scene="res://Scenes/GameManager.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://Resources/Textures/grass_block_side.png"
 
 [autoload]
 
@@ -23,6 +23,9 @@ RpcFunctions="*res://Scripts/Network/RPCFunctions.cs"
 
 [display]
 
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
 window/stretch/scale=2.0
 
 [dotnet]

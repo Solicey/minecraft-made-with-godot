@@ -1,0 +1,153 @@
+[gd_scene load_steps=5 format=3 uid="uid://ctt5x0kxtdvg8"]
+
+[ext_resource type="Script" path="res://Scripts/UI/HostGameUI.cs" id="1_7uxnt"]
+[ext_resource type="Texture2D" uid="uid://nogcns3yelyd" path="res://Resources/Textures/dirt.png" id="2_3k14j"]
+[ext_resource type="Theme" uid="uid://byb4vt4go5e02" path="res://Resources/MCTheme.tres" id="3_4g4rt"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_7oast"]
+blend_mode = 3
+
+[node name="HostGameUi" type="Control" node_paths=PackedStringArray("_seedEntry", "_portEntry", "_nameEntry", "_hostGameButton", "_returnToMainMenuButton")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7uxnt")
+_seedEntry = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer/SeedEntry")
+_portEntry = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer2/PortEntry")
+_nameEntry = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer3/NameEntry")
+_hostGameButton = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer4/HostGameButton")
+_returnToMainMenuButton = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer4/ReturnToMainMenuButton")
+
+[node name="Background" type="TextureRect" parent="."]
+texture_filter = 1
+material = SubResource("CanvasItemMaterial_7oast")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(2, 2)
+texture = ExtResource("2_3k14j")
+stretch_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Upper" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.6
+
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.8
+
+[node name="Label" type="Label" parent="VBoxContainer/CenterContainer"]
+layout_mode = 2
+theme = ExtResource("3_4g4rt")
+theme_override_font_sizes/font_size = 20
+text = "创建游戏"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.5
+alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+alignment = 1
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+split_offset = 10
+dragger_visibility = 1
+
+[node name="SeedLabel" type="Label" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer"]
+layout_mode = 2
+theme = ExtResource("3_4g4rt")
+text = "世界种子"
+vertical_alignment = 1
+
+[node name="SeedEntry" type="LineEdit" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer"]
+layout_mode = 2
+theme = ExtResource("3_4g4rt")
+placeholder_text = "20031231"
+max_length = 10
+
+[node name="HSplitContainer2" type="HSplitContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+split_offset = 10
+dragger_visibility = 1
+
+[node name="PortLabel" type="Label" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer2"]
+layout_mode = 2
+theme = ExtResource("3_4g4rt")
+text = "开放端口"
+vertical_alignment = 1
+
+[node name="PortEntry" type="LineEdit" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer2"]
+layout_mode = 2
+theme = ExtResource("3_4g4rt")
+placeholder_text = "8848"
+max_length = 5
+
+[node name="HSplitContainer3" type="HSplitContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+split_offset = 10
+dragger_visibility = 1
+
+[node name="NameLabel" type="Label" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer3"]
+layout_mode = 2
+theme = ExtResource("3_4g4rt")
+text = "玩家名称"
+vertical_alignment = 1
+
+[node name="NameEntry" type="LineEdit" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer3"]
+layout_mode = 2
+theme = ExtResource("3_4g4rt")
+placeholder_text = "Steve"
+max_length = 10
+
+[node name="HSplitContainer4" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="ReturnToMainMenuButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer4"]
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme = ExtResource("3_4g4rt")
+text = "返回主界面"
+
+[node name="HostGameButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HSplitContainer4"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.0
+focus_mode = 0
+theme = ExtResource("3_4g4rt")
+text = "创建游戏"
+
+[node name="Lower" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.9
