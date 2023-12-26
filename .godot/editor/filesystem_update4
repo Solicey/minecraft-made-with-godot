@@ -1,7 +1,8 @@
-res://Scenes/MainScene.tscn
-res://Materials/Steve.tres
-res://Scenes/UiManager.tscn
-res://Scenes/Player.tscn
-res://Scenes/World.tscn
-res://Scenes/AnimatedCharacter.tscn
+res://Resources/MCTheme.tres
 res://Scenes/Chunk.tscn
+res://Scenes/World.tscn
+res://Scenes/GameManager.tscn
+res://Scenes/UIScenes/UIManager.tscn
+res://Scenes/Player.tscn
+res://Scenes/AnimatedCharacter.tscn
+res://Scenes/UIScenes/MainMenu.tscn

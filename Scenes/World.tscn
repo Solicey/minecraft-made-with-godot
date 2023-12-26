@@ -1,40 +1,42 @@
 [gd_scene load_steps=8 format=3 uid="uid://c2migx3psh2uh"]
 
 [ext_resource type="Script" path="res://Scripts/World/World.cs" id="1_3y7hb"]
-[ext_resource type="PackedScene" uid="uid://dhjxscuu0ix61" path="res://Scenes/Chunk.tscn" id="2_tnju0"]
+[ext_resource type="PackedScene" uid="uid://csujc8mnqyo0l" path="res://Scenes/Chunk.tscn" id="2_2pxgx"]
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_msgte"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_rc3ui"]
 noise_type = 3
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_i53f3"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_g2k1b"]
 noise_type = 0
 frequency = 0.5
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_6wmot"]
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sr5en"]
 
-[sub_resource type="Sky" id="Sky_3gnet"]
-sky_material = SubResource("ProceduralSkyMaterial_6wmot")
+[sub_resource type="Sky" id="Sky_w503r"]
+sky_material = SubResource("ProceduralSkyMaterial_sr5en")
 
-[sub_resource type="Environment" id="Environment_p88c8"]
+[sub_resource type="Environment" id="Environment_s8xer"]
 background_mode = 2
-sky = SubResource("Sky_3gnet")
+sky = SubResource("Sky_w503r")
+ambient_light_source = 3
+reflected_light_source = 2
 ssao_enabled = true
-ssao_intensity = 3.5
+ssao_intensity = 2.5
 ssao_light_affect = 0.2
 
 [node name="World" type="Node3D"]
 script = ExtResource("1_3y7hb")
-_chunkScene = ExtResource("2_tnju0")
-_heightNoise = SubResource("FastNoiseLite_msgte")
-_plantNoise = SubResource("FastNoiseLite_i53f3")
+_chunkScene = ExtResource("2_2pxgx")
+_heightNoise = SubResource("FastNoiseLite_rc3ui")
+_plantNoise = SubResource("FastNoiseLite_g2k1b")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_p88c8")
+environment = SubResource("Environment_s8xer")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.807259, -0.345366, -0.478597, 0, -0.810911, 0.58517, -0.590197, -0.472384, -0.654615, 0, 42.8477, 0)
+transform = Transform3D(0.826914, 0.273172, -0.491519, 0, 0.874078, 0.485786, 0.562329, -0.401703, 0.722787, 0, 0, 0)
 light_energy = 0.6
 light_indirect_energy = 0.6
 shadow_enabled = true
-shadow_bias = 0.05
-directional_shadow_max_distance = 50.0
+shadow_bias = 0.03
+shadow_normal_bias = 1.5

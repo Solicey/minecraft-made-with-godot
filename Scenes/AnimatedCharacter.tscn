@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://cwr4ddns1ayev" path="res://Resources/Models/Steve.blend" id="1_bfyss"]
 [ext_resource type="Script" path="res://Scripts/Player/AnimatedCharacter.cs" id="2_elyrg"]
-[ext_resource type="Material" uid="uid://h1y746fpdb7u" path="res://Materials/Steve.tres" id="3_xd4iq"]
+[ext_resource type="Material" uid="uid://h1y746fpdb7u" path="res://Resources/Materials/Steve.tres" id="3_xd4iq"]
 
 [sub_resource type="Animation" id="Animation_v20ht"]
 resource_name = "Idle"
@@ -165,8 +165,8 @@ _animationTree = NodePath("AnimationTree")
 
 [node name="Skeleton3D" parent="Armature" index="0"]
 unique_name_in_owner = true
-bones/2/rotation = Quaternion(0.999763, -0.0217864, -7.548e-08, 2.76171e-09)
-bones/3/rotation = Quaternion(0.999763, 0.0217864, -7.548e-08, -2.76171e-09)
+bones/2/rotation = Quaternion(0.999995, 0.00311167, -7.54975e-08, 1.67264e-09)
+bones/3/rotation = Quaternion(0.999995, -0.00311167, -7.54975e-08, -1.67264e-09)
 
 [node name="Head" parent="Armature/Skeleton3D" index="0"]
 surface_material_override/0 = ExtResource("3_xd4iq")
