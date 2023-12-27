@@ -6,11 +6,13 @@ namespace MC
     public partial class InGameUI : Control
     {
         [Signal] public delegate void ReturnToMainMenuButtonPressedEventHandler();
+        [Signal] public delegate void OptionsButtonPressedEventHandler();
 
         [Export] Panel _pausePanel;
         [Export] Button _continueGameButton;
         [Export] Button _optionsButton;
         [Export] Button _returnToMainMenuButton;
+        [Export] ScrollContainer _kotobaContainer;
         Global _global;
 
         public override void _Ready()
@@ -26,6 +28,11 @@ namespace MC
             _returnToMainMenuButton.Pressed += () =>
             {
                 EmitSignal(SignalName.ReturnToMainMenuButtonPressed);
+            };
+
+            _optionsButton.Pressed += () =>
+            {
+                EmitSignal(SignalName.OptionsButtonPressed);
             };
         }
 

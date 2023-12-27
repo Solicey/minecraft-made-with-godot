@@ -32,7 +32,7 @@ namespace MC
         InitingWorld,
         InGameActive,
         InGamePaused,
-        InGameOptionsPage,
+        InGameOptionsPage
     }
 
     public partial class GameManager : Node
@@ -47,6 +47,7 @@ namespace MC
         {
             _uiManager.HostGame += OnHostGame;
             _uiManager.JoinGame += OnJoinGame;
+            _uiManager.InGameOptionsReturn += OnInGameOptionsReturn;
 
             _global = GetNode<Global>("/root/Global");
 
@@ -103,6 +104,21 @@ namespace MC
 
             _global.LocalPlayer?.Init();
             _global.GameState = GameState.InGameActive;
+        }
+
+        async void OnInGameOptionsReturn(bool shouldReset)
+        {
+            if (!shouldReset)
+            {
+                CallDeferred(nameof(SetGameState), (int)GameState.InGamePaused);
+                return;
+            }
+
+            SetGameState((int)GameState.InitingWorld);
+            if (!await _world.Init())
+                return;
+
+            CallDeferred(nameof(SetGameState), (int)GameState.InGamePaused);
         }
 
         void SetGameState(int state)

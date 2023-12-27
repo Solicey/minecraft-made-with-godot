@@ -96,7 +96,7 @@ namespace MC
             IsColliderUpToDate = false;
         }
 
-        public async void SyncData(Vector2I chunkPos)
+        public async Task SyncData(Vector2I chunkPos)
         {
             foreach (var mesh in _meshMap.Values)
                 mesh.Mesh = null;
@@ -252,11 +252,6 @@ namespace MC
 
             IsDirty = (oldBlockType != blockType) || IsDirty;
             return IsDirty;
-        }
-
-        async void WaitForSyncDataArrivedSignal()
-        {
-            await ToSignal(this, SignalName.SyncDataArrived);
         }
     }
 

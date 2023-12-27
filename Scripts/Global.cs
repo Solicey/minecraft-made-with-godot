@@ -18,9 +18,9 @@ namespace MC
 
         public static int ServerId { get; private set; } = 1;
 
-        public static int RenderChunkCount { get { return (RenderChunkDistance * 2 + 1) * (RenderChunkDistance * 2 + 1); } }
+        public static int ChunkRenderCount { get { return (ChunkRenderDistance * 2 + 1) * (ChunkRenderDistance * 2 + 1); } }
         
-        public static int RenderChunkDistance { get; set; } = 4;
+        public static int ChunkRenderDistance { get; set; } = 4;
 
         public static Vector3I ChunkShape { get; private set; } = new Vector3I(16, 64, 16);
 

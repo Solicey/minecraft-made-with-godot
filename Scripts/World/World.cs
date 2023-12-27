@@ -108,10 +108,10 @@ namespace MC
 
             UpdateRenderOrder();
 
-            var centerChunkPos = WorldPosToChunkPos(Global.PlayerSpawnPosition);
+            var centerChunkPos = (_global.LocalPlayer != null) ? _global.LocalPlayer.CurrentChunkPos : WorldPosToChunkPos(Global.PlayerSpawnPosition);
 
             List<Task> tasks = new();
-            for (int i = 0; i < Global.RenderChunkCount; i++)
+            for (int i = 0; i < Global.ChunkRenderCount; i++)
             {
                 var chunkPos = centerChunkPos + _renderOrder[i];
                 var chunk = _chunkScene.Instantiate<Chunk>();
@@ -119,16 +119,13 @@ namespace MC
                 chunk.Init(GenerateSimpleTerrain, GetBlockType);
 
                 _chunkPosMap[chunkPos] = chunk;
-                var task = Task.Run(() =>
-                {
-                    chunk.CallDeferred(nameof(chunk.SyncData), chunkPos);
-                });
+                var task = chunk.SyncData(chunkPos);
                 tasks.Add(task);
             }
             await Task.WhenAll(tasks);
 
             tasks.Clear();
-            for (int i = 0; i < Global.RenderChunkCount; i++)
+            for (int i = 0; i < Global.ChunkRenderCount; i++)
             {
                 var chunkPos = centerChunkPos + _renderOrder[i];
                 var chunk = _chunkPosMap[chunkPos];
@@ -259,10 +256,7 @@ namespace MC
                 foreach (var chunkPos in chunkPositionsToUpdate)
                 {
                     var chunk = _chunkPosMap[chunkPos];
-                    var task = Task.Run(() =>
-                    {
-                        chunk.CallDeferred(nameof(chunk.SyncData), chunkPos);
-                    });
+                    var task = chunk.SyncData(chunkPos);
                     tasks.Add(task);
                 }
                 await Task.WhenAll(tasks);
@@ -470,7 +464,7 @@ namespace MC
         void UpdateRenderOrder()
         {
             _renderOrder.Clear();
-            var dis = Global.RenderChunkDistance;
+            var dis = Global.ChunkRenderDistance;
             for (int x = 0; x <= dis; x++)
             {
                 for (int y = 0; y <= dis; y++)

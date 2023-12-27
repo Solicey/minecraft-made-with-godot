@@ -25,7 +25,16 @@ namespace MC
         [Signal] public delegate void LocalPlayerPlaceBlockEventHandler(RayCastHitBlockInfo info);
 
         [Export] public int Id { get; set; }
-        [Export] public string NameTag { get; set; }
+        [Export] public string NameTag 
+        { 
+            get { return _nameTag; }
+            set
+            {
+                _nameTag = value;
+                _nameLabel.Text = value;
+            }
+        }
+        string _nameTag;
 
         public Vector2I CurrentChunkPos { get; set; }
 
@@ -38,6 +47,7 @@ namespace MC
         [Export] Node3D _head;
         [Export] MeshInstance3D _selectionBox;
         [Export] AnimatedCharacter _animatedCharacter;
+        [Export] Label3D _nameLabel;
 
         [Export] float _speed = 4f;
         [Export] float _acceleration = 100f;
@@ -106,9 +116,6 @@ namespace MC
             NameTag = _global.GameStartInfo.PlayerName;
             Position = Global.PlayerSpawnPosition;
 
-            // Generate selection box
-            // GenerateSelectionBoxMesh();
-
             _breakBlockTimer = new Timer();
             AddChild(_breakBlockTimer);
             _breakBlockTimer.OneShot = true;
@@ -119,6 +126,8 @@ namespace MC
 
             _animatedCharacter.SetInvisible();
             HeadRotation = new Vector3();
+
+            _nameLabel.Hide();
         }
 
         public override void _Process(double delta)
@@ -224,6 +233,11 @@ namespace MC
             _animatedCharacter.StartIdleWalkBlendAnimation(_moveDirection.Length());
         }
 
+        public void MakeCameraCurrent()
+        {
+            _camera.MakeCurrent();
+        }
+
         bool InGame()
         {
             return _global.GameState == GameState.InGameActive || _global.GameState == GameState.InGamePaused || _global.GameState == GameState.InGameOptionsPage;
@@ -252,36 +266,6 @@ namespace MC
             return _jumpVelocity;
         }
 
-        /*void GenerateSelectionBoxMesh()
-        {
-            var surfaceTool = new SurfaceTool();
-            var material = new OrmMaterial3D();
-
-            var indices = new int[]
-            {
-                0, 1, 0, 4, 1, 5, 4, 5,
-                0, 2, 1, 3, 4, 6, 5, 7,
-                2, 3, 2, 6, 3, 7, 6, 7
-            };
-
-            surfaceTool.Begin(Mesh.PrimitiveType.Lines);
-
-            for (int i = 0; i < Cubic.Vertices.Length; i++)
-                surfaceTool.AddVertex(Cubic.Vertices[i]);
-            for (int i = 0; i < indices.Length; i++)
-                surfaceTool.AddIndex(indices[i]);
-
-            material.ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded;
-            material.AlbedoColor = new Color(0.2f, 0.2f, 0.2f);
-            surfaceTool.SetMaterial(material);
-
-            var mesh = surfaceTool.Commit();
-
-            _selectionBox.Mesh = mesh;
-            _selectionBox.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
-            _selectionBox.Visible = false;
-        }*/
-
         void UpdateOccupiedBlockPositions()
         {
             OccupiedBlockWorldPositions.Clear();
@@ -289,11 +273,6 @@ namespace MC
             var footOccupiedBlockWorldPos = World.WorldPosToBlockWorldPos(Position - new Vector3(0, _playerHeight / 2f, 0));
             for (int y = footOccupiedBlockWorldPos.Y; y <= headOccupiedBlockWorldPos.Y; y++)
                 OccupiedBlockWorldPositions.Add(new Vector3I(headOccupiedBlockWorldPos.X, y, headOccupiedBlockWorldPos.Z));
-        }
-
-        public void MakeCameraCurrent()
-        {
-            _camera.MakeCurrent();
         }
     }
 }

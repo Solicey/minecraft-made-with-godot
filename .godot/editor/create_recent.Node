@@ -1,4 +1,8 @@
 VBoxContainer
+Label
+ScrollContainer
+LineEdit
+Label3D
 HScrollBar
 SpinBox
 Camera3D
@@ -8,7 +12,3 @@ Control
 Button
 TextureRect
 CenterContainer
-Label
-LineEdit
-TextEdit
-HSplitContainer

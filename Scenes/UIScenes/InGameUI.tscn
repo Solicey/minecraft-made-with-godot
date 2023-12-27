@@ -42,6 +42,7 @@ scale = Vector2(0.4, 0.4)
 texture = ExtResource("1_utyxj")
 
 [node name="PausePanel" type="Panel" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -97,3 +98,36 @@ text = "返回主界面"
 [node name="Lower" type="Control" parent="PausePanel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="LineEdit" type="LineEdit" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -31.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -167.0
+offset_right = 446.0
+offset_bottom = -39.0
+grow_vertical = 0
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 2
+
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+text = "test"
+autowrap_mode = 2

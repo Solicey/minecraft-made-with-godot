@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://cgnp7juxesnfe"]
+[gd_scene load_steps=8 format=3 uid="uid://cgnp7juxesnfe"]
 
 [ext_resource type="Script" path="res://Scripts/Player/Player.cs" id="1_p3810"]
 [ext_resource type="PackedScene" uid="uid://b0snmeo4wa7no" path="res://Scenes/AnimatedCharacter.tscn" id="2_6tr2t"]
+[ext_resource type="FontFile" uid="uid://dx3y0cdjlm6cr" path="res://Resources/Fonts/Minecraft AE.ttf" id="3_mfblw"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rfpb4"]
 radius = 0.4
@@ -26,7 +27,7 @@ properties/2/path = NodePath(".:rotation")
 properties/2/spawn = true
 properties/2/replication_mode = 2
 
-[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_camera", "_rayCast", "_head", "_selectionBox", "_animatedCharacter")]
+[node name="Player" type="CharacterBody3D" node_paths=PackedStringArray("_camera", "_rayCast", "_head", "_selectionBox", "_animatedCharacter", "_nameLabel")]
 collision_layer = 4
 script = ExtResource("1_p3810")
 _camera = NodePath("Head/Camera3D")
@@ -34,6 +35,7 @@ _rayCast = NodePath("Head/Camera3D/RayCast3D")
 _head = NodePath("Head")
 _selectionBox = NodePath("SelectionBox")
 _animatedCharacter = NodePath("AnimatedCharacter")
+_nameLabel = NodePath("NameLabel")
 _jumpHeight = 1.2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
@@ -60,3 +62,13 @@ replication_config = SubResource("SceneReplicationConfig_pdxt8")
 [node name="AnimatedCharacter" parent="." instance=ExtResource("2_6tr2t")]
 unique_name_in_owner = true
 transform = Transform3D(0.22, 0, 0, 0, 0.22, 0, 0, 0, 0.22, 0, -0.9, 0)
+
+[node name="NameLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+billboard = 1
+texture_filter = 0
+modulate = Color(1, 1, 1, 0.588235)
+outline_modulate = Color(0, 0, 0, 0.588235)
+text = "Steve
+"
+font = ExtResource("3_mfblw")

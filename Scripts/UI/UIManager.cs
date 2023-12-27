@@ -9,7 +9,7 @@ namespace MC
 
         [Signal] public delegate void JoinGameEventHandler(GameStartInfo info);
 
-        [Signal] public delegate void InGameOptionsReturnEventHandler();
+        [Signal] public delegate void InGameOptionsReturnEventHandler(bool shouldReset);
 
         [Export] MainMenuUI _mainMenuUI;
         [Export] HostGameUI _hostGameUI;
@@ -36,7 +36,7 @@ namespace MC
         [Export] float _headRotateSpeed = -0.03f;
 
         Global _global;
-        Control _lastControl = null;
+        //Control _lastControl = null;
         Control _currentControl = null;
 
         public override void _Ready()
@@ -49,6 +49,8 @@ namespace MC
             _mainMenuUI.HostGameButtonPressed += () => { _global.GameState = GameState.InHostGamePage; };
 
             _mainMenuUI.JoinGameButtonPressed += () => { _global.GameState = GameState.InJoinGamePage; };
+
+            _mainMenuUI.OptionsButtonPressed += () => { _global.GameState = GameState.InOptionsPage; };
 
             _hostGameUI.ReturnToMainMenuButtonPressed += () => { _global.GameState = GameState.InMainMenu; };
 
@@ -78,12 +80,14 @@ namespace MC
 
             _inGameUI.ReturnToMainMenuButtonPressed += () => { _global.GameState = GameState.InMainMenu; };
 
-            _optionsUI.ReturnButtonPressed += () =>
+            _inGameUI.OptionsButtonPressed += () => { _global.GameState = GameState.InGameOptionsPage; };
+
+            _optionsUI.ReturnButtonPressed += (bool shouldReset) =>
             {
-                if (_lastControl == _mainMenuUI)
+                if (_global.GameState == GameState.InOptionsPage)
                     _global.GameState = GameState.InMainMenu;
-                else if (_lastControl == _inGameUI)
-                    EmitSignal(SignalName.InGameOptionsReturn);
+                else if (_global.GameState == GameState.InGameOptionsPage)
+                    EmitSignal(SignalName.InGameOptionsReturn, shouldReset);
             };
         }
 
@@ -97,7 +101,7 @@ namespace MC
 
         void ChangeCurrentControlTo(Control control)
         {
-            _lastControl = _currentControl;
+            //_lastControl = _currentControl;
 
             if (_currentControl == control)
                 return;
@@ -129,6 +133,12 @@ namespace MC
                     break;
                 case GameState.InJoinGamePage:
                     ChangeCurrentControlTo(_joinGameUI);
+                    Input.MouseMode = Input.MouseModeEnum.Visible;
+                    _canvasCamera.MakeCurrent();
+                    break;
+                case GameState.InOptionsPage:
+                case GameState.InGameOptionsPage:
+                    ChangeCurrentControlTo(_optionsUI);
                     Input.MouseMode = Input.MouseModeEnum.Visible;
                     _canvasCamera.MakeCurrent();
                     break;
