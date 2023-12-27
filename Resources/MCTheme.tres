@@ -1,11 +1,15 @@
-[gd_resource type="Theme" load_steps=12 format=3 uid="uid://byb4vt4go5e02"]
+[gd_resource type="Theme" load_steps=21 format=3 uid="uid://byb4vt4go5e02"]
 
 [ext_resource type="Texture2D" uid="uid://46vnp82lkflj" path="res://Resources/Textures/UI/button_disabled.png" id="1_7yet2"]
 [ext_resource type="Texture2D" uid="uid://ibnbryfqbhig" path="res://Resources/Textures/UI/button_highlighted.png" id="2_8j0fe"]
 [ext_resource type="Texture2D" uid="uid://c7efaky7f46od" path="res://Resources/Textures/UI/button.png" id="3_co4rn"]
 [ext_resource type="Texture2D" uid="uid://d3paxi15s26c0" path="res://Resources/Textures/UI/text_field_highlighted.png" id="4_3bxdo"]
 [ext_resource type="FontFile" uid="uid://dx3y0cdjlm6cr" path="res://Resources/Fonts/Minecraft AE.ttf" id="4_5uuem"]
+[ext_resource type="Texture2D" uid="uid://dljbm5aya7113" path="res://Resources/Textures/UI/slider.png" id="4_6qnip"]
 [ext_resource type="Texture2D" uid="uid://y5n6y660fjgh" path="res://Resources/Textures/UI/text_field.png" id="4_53olb"]
+[ext_resource type="Texture2D" uid="uid://8b4r6m3iipns" path="res://Resources/Textures/UI/slider_handle.png" id="4_d5wmj"]
+[ext_resource type="Texture2D" uid="uid://8u74yuaon66p" path="res://Resources/Textures/UI/slider_handle_highlighted.png" id="5_2gekf"]
+[ext_resource type="Texture2D" uid="uid://b72yewb1scdss" path="res://Resources/Textures/UI/slider_highlighted.png" id="5_5oxpn"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_euscd"]
 texture = ExtResource("1_7yet2")
@@ -15,6 +19,8 @@ texture_margin_right = 1.0
 texture_margin_bottom = 1.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8kryh"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_hduy2"]
 texture = ExtResource("2_8j0fe")
@@ -34,6 +40,44 @@ texture_margin_bottom = 3.0
 axis_stretch_horizontal = 1
 axis_stretch_vertical = 1
 region_rect = Rect2(0, 0, 200, 20)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qjr41"]
+content_margin_left = 12.0
+texture = ExtResource("4_d5wmj")
+texture_margin_left = 2.0
+texture_margin_top = 2.0
+texture_margin_right = 2.0
+texture_margin_bottom = 3.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_r1p4j"]
+content_margin_left = 12.0
+texture = ExtResource("5_2gekf")
+texture_margin_left = 2.0
+texture_margin_top = 2.0
+texture_margin_right = 2.0
+texture_margin_bottom = 3.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qvmcb"]
+texture = ExtResource("4_6qnip")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5grgn"]
+texture = ExtResource("5_5oxpn")
+texture_margin_left = 1.0
+texture_margin_top = 1.0
+texture_margin_right = 1.0
+texture_margin_bottom = 1.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_24csi"]
 content_margin_left = 10.0
@@ -59,9 +103,14 @@ axis_stretch_vertical = 1
 default_font = ExtResource("4_5uuem")
 default_font_size = 12
 Button/styles/disabled = SubResource("StyleBoxTexture_euscd")
-Button/styles/focus = SubResource("StyleBoxTexture_hduy2")
+Button/styles/focus = SubResource("StyleBoxTexture_8kryh")
 Button/styles/hover = SubResource("StyleBoxTexture_hduy2")
 Button/styles/normal = SubResource("StyleBoxTexture_0sdam")
 Button/styles/pressed = SubResource("StyleBoxTexture_hduy2")
+HScrollBar/styles/grabber = SubResource("StyleBoxTexture_qjr41")
+HScrollBar/styles/grabber_highlight = SubResource("StyleBoxTexture_r1p4j")
+HScrollBar/styles/grabber_pressed = SubResource("StyleBoxTexture_r1p4j")
+HScrollBar/styles/scroll = SubResource("StyleBoxTexture_qvmcb")
+HScrollBar/styles/scroll_focus = SubResource("StyleBoxTexture_5grgn")
 LineEdit/styles/focus = SubResource("StyleBoxTexture_24csi")
 LineEdit/styles/normal = SubResource("StyleBoxTexture_je3oq")

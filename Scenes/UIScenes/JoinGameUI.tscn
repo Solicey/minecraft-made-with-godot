@@ -71,11 +71,10 @@ alignment = 1
 [node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-alignment = 1
 
 [node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
-size_flags_vertical = 3
 split_offset = 10
 dragger_visibility = 1
 
@@ -92,8 +91,8 @@ placeholder_text = "127.0.0.1"
 max_length = 15
 
 [node name="HSplitContainer2" type="HSplitContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
-size_flags_vertical = 3
 split_offset = 10
 dragger_visibility = 1
 
@@ -110,8 +109,8 @@ placeholder_text = "8848"
 max_length = 5
 
 [node name="HSplitContainer3" type="HSplitContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
-size_flags_vertical = 3
 split_offset = 10
 dragger_visibility = 1
 
@@ -128,12 +127,11 @@ placeholder_text = "Steve"
 max_length = 10
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
-size_flags_vertical = 3
 alignment = 1
 
 [node name="ReturnToMainMenuButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
@@ -141,7 +139,6 @@ theme = ExtResource("3_ooouf")
 text = "返回主界面"
 
 [node name="JoinGameButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 2.0

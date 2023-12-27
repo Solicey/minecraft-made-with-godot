@@ -70,7 +70,9 @@ namespace MC
         async Task Reset()
         {
             foreach (var player in _playerDict.Values)
-                player.QueueFree();
+                player?.QueueFree();
+            foreach (var id in _playerDict.Keys)
+                _multiplayer?.DisconnectPeer(id);
             _playerDict.Clear();
 
             while (_isUpdatingVarDict)

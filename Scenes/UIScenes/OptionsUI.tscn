@@ -1,0 +1,110 @@
+[gd_scene load_steps=5 format=3 uid="uid://c1ly2om2hvysx"]
+
+[ext_resource type="Script" path="res://Scripts/UI/OptionsUI.cs" id="1_nn3wb"]
+[ext_resource type="Texture2D" uid="uid://nogcns3yelyd" path="res://Resources/Textures/dirt.png" id="2_3wa86"]
+[ext_resource type="Theme" uid="uid://byb4vt4go5e02" path="res://Resources/MCTheme.tres" id="3_50ixs"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_7oast"]
+blend_mode = 3
+
+[node name="OptionsUI" type="Control" node_paths=PackedStringArray("_chunkRenderDistanceScrollBar", "_returnButton")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_nn3wb")
+_chunkRenderDistanceScrollBar = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer/HSplitContainer/ChunkRenderDistanceScrollBar")
+_returnButton = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/ReturnButton")
+
+[node name="Background" type="TextureRect" parent="."]
+texture_filter = 1
+material = SubResource("CanvasItemMaterial_7oast")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(2, 2)
+texture = ExtResource("2_3wa86")
+stretch_mode = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Upper" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.6
+
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.8
+
+[node name="Label" type="Label" parent="VBoxContainer/CenterContainer"]
+layout_mode = 2
+theme = ExtResource("3_50ixs")
+theme_override_font_sizes/font_size = 16
+text = "选项"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 1.5
+alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+split_offset = 10
+dragger_visibility = 1
+
+[node name="ChunkRenderDistanceLabel" type="Label" parent="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer/HSplitContainer"]
+layout_mode = 2
+theme = ExtResource("3_50ixs")
+text = "区块渲染距离"
+vertical_alignment = 1
+
+[node name="ChunkRenderDistanceScrollBar" type="HScrollBar" parent="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer/HSplitContainer"]
+texture_repeat = 3
+layout_mode = 2
+size_flags_vertical = 1
+theme = ExtResource("3_50ixs")
+min_value = 1.0
+max_value = 8.0
+step = 1.0
+value = 2.0
+rounded = true
+
+[node name="ReturnButton" type="Button" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme = ExtResource("3_50ixs")
+text = "返回"
+
+[node name="Lower" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.9

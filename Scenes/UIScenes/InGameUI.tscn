@@ -92,7 +92,7 @@ custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 focus_mode = 0
 theme = ExtResource("3_ua1e8")
-text = "返回主菜单"
+text = "返回主界面"
 
 [node name="Lower" type="Control" parent="PausePanel/VBoxContainer"]
 layout_mode = 2

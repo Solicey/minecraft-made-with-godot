@@ -1,0 +1,25 @@
+[gd_scene load_steps=2 format=3 uid="uid://chhyrnlqhceya"]
+
+[ext_resource type="Theme" uid="uid://byb4vt4go5e02" path="res://Resources/MCTheme.tres" id="1_ewedw"]
+
+[node name="ThemeUi" type="Control"]
+texture_filter = 1
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HScrollBar" type="HScrollBar" parent="."]
+layout_mode = 0
+offset_left = 51.0
+offset_top = 61.0
+offset_right = 212.0
+offset_bottom = 85.0
+theme = ExtResource("1_ewedw")
+min_value = 1.0
+max_value = 8.0
+step = 1.0
+value = 1.0
+rounded = true

@@ -86,7 +86,6 @@ namespace MC
 
         public override void _Ready()
         {
-            _camera.ClearCurrent();
             _global = GetNode<Global>("/root/Global");
 
             if (!IsMultiplayerAuthority())
@@ -227,7 +226,7 @@ namespace MC
 
         bool InGame()
         {
-            return _global.GameState == GameState.InGameActive || _global.GameState == GameState.InGamePaused;
+            return _global.GameState == GameState.InGameActive || _global.GameState == GameState.InGamePaused || _global.GameState == GameState.InGameOptionsPage;
         }
 
         Vector3 Walk(float delta)

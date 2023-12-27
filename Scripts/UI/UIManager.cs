@@ -9,11 +9,14 @@ namespace MC
 
         [Signal] public delegate void JoinGameEventHandler(GameStartInfo info);
 
+        [Signal] public delegate void InGameOptionsReturnEventHandler();
+
         [Export] MainMenuUI _mainMenuUI;
         [Export] HostGameUI _hostGameUI;
         [Export] JoinGameUI _joinGameUI;
         [Export] LoadingUI _loadingUI;
         [Export] InGameUI _inGameUI;
+        [Export] OptionsUI _optionsUI;
 
         [Export] Camera3D _panoramaCamera;
         [Export] Camera3D _canvasCamera;
@@ -74,6 +77,14 @@ namespace MC
             _loadingUI.ReturnToMainMenuButtonPressed += () => { _global.GameState = GameState.InMainMenu; };
 
             _inGameUI.ReturnToMainMenuButtonPressed += () => { _global.GameState = GameState.InMainMenu; };
+
+            _optionsUI.ReturnButtonPressed += () =>
+            {
+                if (_lastControl == _mainMenuUI)
+                    _global.GameState = GameState.InMainMenu;
+                else if (_lastControl == _inGameUI)
+                    EmitSignal(SignalName.InGameOptionsReturn);
+            };
         }
 
         public override void _Process(double delta)
@@ -86,7 +97,6 @@ namespace MC
 
         void ChangeCurrentControlTo(Control control)
         {
-
             _lastControl = _currentControl;
 
             if (_currentControl == control)
@@ -108,13 +118,20 @@ namespace MC
             switch (gameState)
             {
                 case GameState.InMainMenu:
+                    ChangeCurrentControlTo(_mainMenuUI);
+                    Input.MouseMode = Input.MouseModeEnum.Visible;
                     _panoramaCamera.MakeCurrent();
                     break;
                 case GameState.InHostGamePage:
                     ChangeCurrentControlTo(_hostGameUI);
+                    Input.MouseMode = Input.MouseModeEnum.Visible;
                     _canvasCamera.MakeCurrent();
                     break;
-                
+                case GameState.InJoinGamePage:
+                    ChangeCurrentControlTo(_joinGameUI);
+                    Input.MouseMode = Input.MouseModeEnum.Visible;
+                    _canvasCamera.MakeCurrent();
+                    break;
                 case GameState.ClientConnecting:
                 case GameState.ClientCantCreate:
                 case GameState.ClientTimeout:
@@ -126,7 +143,13 @@ namespace MC
                 case GameState.ServerCantCreate:
                 case GameState.ServerCreated_SyncingPlayer:
                     ChangeCurrentControlTo(_loadingUI);
+                    Input.MouseMode = Input.MouseModeEnum.Visible;
                     _canvasCamera.MakeCurrent();
+                    break;
+                case GameState.InGameActive:
+                case GameState.InGamePaused:
+                    ChangeCurrentControlTo(_inGameUI);
+                    _global.LocalPlayer?.MakeCameraCurrent();
                     break;
             }
 
@@ -162,11 +185,7 @@ namespace MC
                 case GameState.ServerCreated_SyncingPlayer:
                     _loadingUI.SetLoadingMessage(_serverSyncingPlayerMsg);
                     break;
-                case GameState.InGameActive:
-                case GameState.InGamePaused:
-                    _global.LocalPlayer?.MakeCameraCurrent();
-                    ChangeCurrentControlTo(_inGameUI);
-                    break;
+
             }
         }
     }

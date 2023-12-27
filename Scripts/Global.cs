@@ -20,7 +20,7 @@ namespace MC
 
         public static int RenderChunkCount { get { return (RenderChunkDistance * 2 + 1) * (RenderChunkDistance * 2 + 1); } }
         
-        public static int RenderChunkDistance { get; private set; } = 4;
+        public static int RenderChunkDistance { get; set; } = 4;
 
         public static Vector3I ChunkShape { get; private set; } = new Vector3I(16, 64, 16);
 
@@ -93,15 +93,10 @@ namespace MC
         public async Task<bool> WaitForNewGameState(GameState targetState)
         {
             if (GameState == targetState)
-            {
                 return true;
-            }
             else
-            {
                 await ToSignal(this, SignalName.GameStateChanged);
-            }
             return GameState == targetState;
         }
-
     }
 }

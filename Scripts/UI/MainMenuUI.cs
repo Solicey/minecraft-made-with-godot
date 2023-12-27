@@ -37,10 +37,5 @@ namespace MC
             _optionsButton.Pressed += () => { EmitSignal(SignalName.OptionsButtonPressed); };
             _quitButton.Pressed += () => { GetTree().Quit(); };
         }
-
-        public override void _EnterTree()
-        {
-            Input.MouseMode = Input.MouseModeEnum.Visible;
-        }
     }
 }

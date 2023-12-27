@@ -221,7 +221,7 @@ namespace MC
 
         async Task<bool> Update(Vector2I centerChunkPos, bool isCenterChunkPosNew)
         {
-            GD.Print("Begin update!");
+            //GD.Print("Begin update!");
             //GD.Print($"Center chunk pos: {centerChunkPos}");
 
             List<Task> tasks = new();
@@ -313,7 +313,7 @@ namespace MC
             }
             await Task.WhenAll(tasks);
 
-            GD.Print("End update!");
+            //GD.Print("End update!");
 
             return true;
         }
@@ -489,7 +489,7 @@ namespace MC
         async void OnGameStateChanged(int state)
         {
             var gameState = (GameState)state;
-            GD.Print($"Game state: {gameState}");
+            //GD.Print($"Game state: {gameState}");
 
             switch (gameState)
             {

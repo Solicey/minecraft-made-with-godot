@@ -1,8 +1,10 @@
+VBoxContainer
+HScrollBar
+SpinBox
 Camera3D
 Panel
 HBoxContainer
 Control
-VBoxContainer
 Button
 TextureRect
 CenterContainer
@@ -10,6 +12,3 @@ Label
 LineEdit
 TextEdit
 HSplitContainer
-SubViewport
-DirectionalLight3D
-WorldEnvironment

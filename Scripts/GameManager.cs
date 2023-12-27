@@ -32,6 +32,7 @@ namespace MC
         InitingWorld,
         InGameActive,
         InGamePaused,
+        InGameOptionsPage,
     }
 
     public partial class GameManager : Node
