@@ -33,6 +33,8 @@ namespace MC
         [Signal] public delegate void UpdateChunkDoneEventHandler();
         [Signal] public delegate void ReceivedBlockVariationEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, int blockType, bool shallCompareTimeStamp, uint timeStamp);
 
+        int _waitingTask = 0;
+
         public override void _Ready()
         {
             _global = GetNode<Global>("/root/Global");
@@ -218,7 +220,7 @@ namespace MC
 
         async Task<bool> Update(Vector2I centerChunkPos, bool isCenterChunkPosNew)
         {
-            //GD.Print("Begin update!");
+            GD.Print("Begin update!");
             //GD.Print($"Center chunk pos: {centerChunkPos}");
 
             List<Task> tasks = new();
@@ -307,20 +309,20 @@ namespace MC
             }
             await Task.WhenAll(tasks);
 
-            //GD.Print("End update!");
+            GD.Print("End update!");
 
             return true;
         }
 
         async void OnChunkUpdateTimerTimeout()
         {
+            if (_global.LocalPlayer == null)
+                return;
+
             if (_isUpdating || !_hasInit)
                 return;
             _isUpdating = true;
             //GD.Print("Timer update begin!");
-
-            if (_global.LocalPlayer == null)
-                return;
 
             var newCenterChunkPos = _global.LocalPlayer.CurrentChunkPos;
             var isCenterChunkPosNew = newCenterChunkPos != _oldCenterChunkPos;
@@ -356,7 +358,9 @@ namespace MC
         {
             BlockType type = (BlockType)blockType;
             while (_isUpdating)
+            {
                 await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
+            }
             if (!_hasInit)
                 return;
             _isUpdating = true;
@@ -396,8 +400,14 @@ namespace MC
 
         async void OnLocalPlayerBreakBlock(RayCastHitBlockInfo info)
         {
+            _waitingTask++;
+            GD.Print($"Right here waiting! {_waitingTask}");
             while (_isUpdating)
+            {
                 await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
+            }
+            GD.Print("End waiting!");
+            _waitingTask--;
             if (!_hasInit)
                 return;
 
@@ -418,7 +428,9 @@ namespace MC
         async void OnLocalPlayerPlaceBlock(RayCastHitBlockInfo info)
         {
             while (_isUpdating)
+            {
                 await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
+            }
             if (!_hasInit)
                 return;
 

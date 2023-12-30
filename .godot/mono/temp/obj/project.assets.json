@@ -93,11 +93,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Godot\\Minecraft\\Minecraft.csproj",
+      "projectUniqueName": "D:\\GODOT\\MINECRAFT\\Minecraft.csproj",
       "projectName": "Minecraft",
-      "projectPath": "D:\\Godot\\Minecraft\\Minecraft.csproj",
+      "projectPath": "D:\\GODOT\\MINECRAFT\\Minecraft.csproj",
       "packagesPath": "C:\\Users\\Sky\\.nuget\\packages\\",
-      "outputPath": "D:\\Godot\\Minecraft\\.godot\\mono\\temp\\obj\\",
+      "outputPath": "D:\\GODOT\\MINECRAFT\\.godot\\mono\\temp\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Sky\\AppData\\Roaming\\NuGet\\NuGet.Config"

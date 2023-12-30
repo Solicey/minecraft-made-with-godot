@@ -46,6 +46,9 @@ namespace MC
         Dictionary<MaterialType, SurfaceTool> _meshSurfaceTools = new();
         Dictionary<ColliderType, SurfaceTool> _colliderSurfaceTools = new();
 
+        Dictionary<MaterialType, ArrayMesh> _meshes = new();
+        Dictionary<ColliderType, ArrayMesh> _colliders = new();
+
         BlockManager _blockManager;
         RPCFunctions _rpcFunctions;
 
@@ -68,8 +71,7 @@ namespace MC
                 AddChild(mesh);
                 _meshMap[type] = mesh;
 
-                var surfaceTool = new SurfaceTool();
-                _meshSurfaceTools[type] = surfaceTool;
+                _meshSurfaceTools[type] = new();
             }
             foreach (ColliderType type in Enum.GetValues(typeof(ColliderType)))
             {
@@ -98,8 +100,9 @@ namespace MC
 
         public async Task SyncData(Vector2I chunkPos)
         {
-            foreach (var mesh in _meshMap.Values)
-                mesh.Mesh = null;
+            //foreach (var mesh in _meshMap.Values)
+            //mesh.Mesh = null;
+            Visible = false;
 
             ChunkPosition = chunkPos;
 
@@ -139,12 +142,11 @@ namespace MC
 
         public async Task SyncMesh()
         {
-            Dictionary<MaterialType, ArrayMesh> meshes = new();
+            foreach (var tool in _meshSurfaceTools.Values)
+                tool.Begin(Mesh.PrimitiveType.Triangles);
 
             await Task.Run(() =>
             {
-                foreach (var tool in _meshSurfaceTools.Values)
-                    tool.Begin(Mesh.PrimitiveType.Triangles);
 
                 var chunkWorldPos = World.ChunkPosToChunkWorldPos(ChunkPosition);
 
@@ -163,33 +165,38 @@ namespace MC
                 }
 
                 //GD.Print("Reach here!");
-
-                foreach (var pair in _meshSurfaceTools)
-                {
-                    pair.Value.SetMaterial(_blockManager.MaterialMap.GetValueOrDefault(pair.Key));
-                    meshes[pair.Key] = pair.Value.Commit();
-                }
-
             });
+
+            foreach (var pair in _meshSurfaceTools)
+            {
+                //pair.Value.SetMaterial(_blockManager.MaterialMap.GetValueOrDefault(pair.Key));
+                _meshes[pair.Key] = pair.Value.Commit();
+                pair.Value.Clear();
+            }
 
             //GD.Print("Sync mesh done!");
 
-            foreach (var type in meshes.Keys)
-                _meshMap[type].Mesh = meshes[type];
+            CallDeferred(nameof(UpdateMesh));
 
             //_collisionShape.Shape = mesh.CreateTrimeshShape();
 
             IsDirty = false;
+            Visible = true;
+        }
+
+        void UpdateMesh()
+        {
+            foreach (var type in _meshes.Keys)
+                _meshMap[type].Mesh = _meshes[type];
         }
 
         public async Task SyncCollider()
         {
-            Dictionary<ColliderType, ArrayMesh> colliders = new();
+            foreach (var tool in _colliderSurfaceTools.Values)
+                tool.Begin(Mesh.PrimitiveType.Triangles);
 
             await Task.Run(() =>
             {
-                foreach (var tool in _colliderSurfaceTools.Values)
-                    tool.Begin(Mesh.PrimitiveType.Triangles);
 
                 var chunkWorldPos = World.ChunkPosToChunkWorldPos(ChunkPosition);
 
@@ -209,19 +216,27 @@ namespace MC
 
                 //GD.Print("Reach here!");
 
-                foreach (var pair in _colliderSurfaceTools)
-                    colliders[pair.Key] = pair.Value.Commit();
-
             });
+
+            foreach (var pair in _colliderSurfaceTools)
+            {
+                _colliders[pair.Key] = pair.Value.Commit();
+                pair.Value.Clear();
+            }
 
             //GD.Print("Sync mesh done!");
 
-            foreach (var type in colliders.Keys)
-                _colliderMap[type].Shape = colliders[type].CreateTrimeshShape();
+            CallDeferred(nameof(UpdateCollider));
 
             //_collisionShape.Shape = mesh.CreateTrimeshShape();
 
             IsColliderUpToDate = true;
+        }
+
+        void UpdateCollider()
+        {
+            foreach (var type in _colliders.Keys)
+                _colliderMap[type].Shape = _colliders[type].CreateTrimeshShape();
         }
 
         public BlockType GetLocalBlockType(Vector3I blockLocalPos)

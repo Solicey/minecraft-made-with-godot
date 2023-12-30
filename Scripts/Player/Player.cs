@@ -66,8 +66,8 @@ namespace MC
 
         RayCastHitBlockInfo _rayCastInfo = new();
 
-        [Export] float _breakBlockInterval = 0.2f;
-        [Export] float _placeBlockInterval = 0.2f;
+        [Export] float _breakBlockInterval = 0.01f;
+        [Export] float _placeBlockInterval = 0.01f;
         Timer _breakBlockTimer = null;
         Timer _placeBlockTimer = null;
 

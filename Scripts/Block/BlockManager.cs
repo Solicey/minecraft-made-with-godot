@@ -212,8 +212,24 @@ namespace MC
             var normal = (((Vector3)(c - a)).Cross((Vector3)(b - a))).Normalized();
             var normals = new Vector3[] { normal, normal, normal };
 
-            surfaceTool.AddTriangleFan(triangle1, uvTriangle1, normals: normals);
-            surfaceTool.AddTriangleFan(triangle2, uvTriangle2, normals: normals);
+            if (surfaceTool == null)
+                GD.PrintErr("Surface tool is null!");
+
+            try
+            {
+                surfaceTool?.AddTriangleFan(triangle1, uvTriangle1, normals: normals);
+                surfaceTool?.AddTriangleFan(triangle2, uvTriangle2, normals: normals);
+            }
+            catch 
+            {
+                GD.PrintErr("Surface tool error!");
+            }
+        }
+
+        void AddSurfaceToArray(Vector3[] verts, Vector2[] uvs, Vector3[] normals)
+        {
+            var surfaceArray = new Godot.Collections.Array();
+            surfaceArray.Resize((int)Mesh.ArrayType.Max);
         }
 
         // TODO

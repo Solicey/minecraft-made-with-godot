@@ -100,6 +100,7 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="LineEdit" type="LineEdit" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -110,6 +111,7 @@ grow_horizontal = 2
 grow_vertical = 0
 
 [node name="ScrollContainer" type="ScrollContainer" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
