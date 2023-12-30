@@ -20,19 +20,24 @@
             "related": ".xml"
           }
         }
-      },
-      "GodotSharpEditor/4.2.0": {
+      }
+    },
+    "net6.0/win-x64": {
+      "Godot.SourceGenerators/4.2.0": {
         "type": "package",
-        "dependencies": {
-          "GodotSharp": "4.2.0"
-        },
+        "build": {
+          "build/Godot.SourceGenerators.props": {}
+        }
+      },
+      "GodotSharp/4.2.0": {
+        "type": "package",
         "compile": {
-          "lib/net6.0/GodotSharpEditor.dll": {
+          "lib/net6.0/GodotSharp.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net6.0/GodotSharpEditor.dll": {
+          "lib/net6.0/GodotSharp.dll": {
             "related": ".xml"
           }
         }
@@ -65,26 +70,12 @@
         "lib/net6.0/GodotSharp.dll",
         "lib/net6.0/GodotSharp.xml"
       ]
-    },
-    "GodotSharpEditor/4.2.0": {
-      "sha512": "THek5TbbXZQuMTT1I+XOGlY0uosXMXv2eAmGnYaSWQaJiSCa5tVGiSyngx+vVckrPlWpoCwsUmp5qSexs8xyGw==",
-      "type": "package",
-      "path": "godotsharpeditor/4.2.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "godotsharpeditor.4.2.0.nupkg.sha512",
-        "godotsharpeditor.nuspec",
-        "lib/net6.0/GodotSharpEditor.dll",
-        "lib/net6.0/GodotSharpEditor.xml"
-      ]
     }
   },
   "projectFileDependencyGroups": {
     "net6.0": [
       "Godot.SourceGenerators >= 4.2.0",
-      "GodotSharp >= 4.2.0",
-      "GodotSharpEditor >= 4.2.0"
+      "GodotSharp >= 4.2.0"
     ]
   },
   "packageFolders": {
@@ -93,11 +84,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\GODOT\\MINECRAFT\\Minecraft.csproj",
+      "projectUniqueName": "D:\\Godot\\Minecraft\\Minecraft.csproj",
       "projectName": "Minecraft",
-      "projectPath": "D:\\GODOT\\MINECRAFT\\Minecraft.csproj",
+      "projectPath": "D:\\Godot\\Minecraft\\Minecraft.csproj",
       "packagesPath": "C:\\Users\\Sky\\.nuget\\packages\\",
-      "outputPath": "D:\\GODOT\\MINECRAFT\\.godot\\mono\\temp\\obj\\",
+      "outputPath": "D:\\Godot\\Minecraft\\.godot\\mono\\temp\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Sky\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -131,10 +122,6 @@
           "GodotSharp": {
             "target": "Package",
             "version": "[4.2.0, )"
-          },
-          "GodotSharpEditor": {
-            "target": "Package",
-            "version": "[4.2.0, )"
           }
         },
         "imports": [
@@ -148,12 +135,31 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+            "version": "[6.0.21, 6.0.21]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.win-x64",
+            "version": "[6.0.21, 6.0.21]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+            "version": "[6.0.21, 6.0.21]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "win-x64": {
+        "#import": []
       }
     }
   }

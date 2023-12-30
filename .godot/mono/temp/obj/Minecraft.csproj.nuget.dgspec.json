@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\GODOT\\MINECRAFT\\Minecraft.csproj": {}
+    "D:\\Godot\\Minecraft\\Minecraft.csproj": {}
   },
   "projects": {
-    "D:\\GODOT\\MINECRAFT\\Minecraft.csproj": {
+    "D:\\Godot\\Minecraft\\Minecraft.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\GODOT\\MINECRAFT\\Minecraft.csproj",
+        "projectUniqueName": "D:\\Godot\\Minecraft\\Minecraft.csproj",
         "projectName": "Minecraft",
-        "projectPath": "D:\\GODOT\\MINECRAFT\\Minecraft.csproj",
+        "projectPath": "D:\\Godot\\Minecraft\\Minecraft.csproj",
         "packagesPath": "C:\\Users\\Sky\\.nuget\\packages\\",
-        "outputPath": "D:\\GODOT\\MINECRAFT\\.godot\\mono\\temp\\obj\\",
+        "outputPath": "D:\\Godot\\Minecraft\\.godot\\mono\\temp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Sky\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -45,10 +45,6 @@
             "GodotSharp": {
               "target": "Package",
               "version": "[4.2.0, )"
-            },
-            "GodotSharpEditor": {
-              "target": "Package",
-              "version": "[4.2.0, )"
             }
           },
           "imports": [
@@ -62,12 +58,31 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+              "version": "[6.0.21, 6.0.21]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.win-x64",
+              "version": "[6.0.21, 6.0.21]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+              "version": "[6.0.21, 6.0.21]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "win-x64": {
+          "#import": []
         }
       }
     }

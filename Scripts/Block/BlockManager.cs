@@ -212,17 +212,18 @@ namespace MC
             var normal = (((Vector3)(c - a)).Cross((Vector3)(b - a))).Normalized();
             var normals = new Vector3[] { normal, normal, normal };
 
-            if (surfaceTool == null)
-                GD.PrintErr("Surface tool is null!");
-
-            try
+            for (int i = 0; i < triangle1.Length; i++)
             {
-                surfaceTool?.AddTriangleFan(triangle1, uvTriangle1, normals: normals);
-                surfaceTool?.AddTriangleFan(triangle2, uvTriangle2, normals: normals);
+                surfaceTool.SetNormal(normals[i]);
+                surfaceTool.SetUV(uvTriangle1[i]);
+                surfaceTool.AddVertex(triangle1[i]);
             }
-            catch 
+
+            for (int i = 0; i < triangle2.Length; i++)
             {
-                GD.PrintErr("Surface tool error!");
+                surfaceTool.SetNormal(normals[i]);
+                surfaceTool.SetUV(uvTriangle2[i]);
+                surfaceTool.AddVertex(triangle2[i]);
             }
         }
 
