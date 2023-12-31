@@ -66,8 +66,8 @@ namespace MC
 
         RayCastHitBlockInfo _rayCastInfo = new();
 
-        [Export] float _breakBlockInterval = 0.01f;
-        [Export] float _placeBlockInterval = 0.01f;
+        [Export] float _breakBlockInterval = 0.25f;
+        [Export] float _placeBlockInterval = 0.25f;
         Timer _breakBlockTimer = null;
         Timer _placeBlockTimer = null;
 
@@ -201,6 +201,7 @@ namespace MC
                 return;
 
             Velocity = Walk((float)delta) + Gravity((float)delta) + Jump((float)delta);
+            
             MoveAndSlide();
         }
 

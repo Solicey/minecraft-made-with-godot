@@ -33,8 +33,6 @@ namespace MC
         [Signal] public delegate void UpdateChunkDoneEventHandler();
         [Signal] public delegate void ReceivedBlockVariationEventHandler(Vector2I chunkPos, Vector3I blockLocalPos, int blockType, bool shallCompareTimeStamp, uint timeStamp);
 
-        int _waitingTask = 0;
-
         public override void _Ready()
         {
             _global = GetNode<Global>("/root/Global");
@@ -121,8 +119,7 @@ namespace MC
                 chunk.Init(GenerateSimpleTerrain, GetBlockType);
 
                 _chunkPosMap[chunkPos] = chunk;
-                var task = chunk.SyncData(chunkPos);
-                tasks.Add(task);
+                tasks.Add(chunk.SyncData(chunkPos));
             }
             await Task.WhenAll(tasks);
 
@@ -131,14 +128,13 @@ namespace MC
             {
                 var chunkPos = centerChunkPos + _renderOrder[i];
                 var chunk = _chunkPosMap[chunkPos];
-                var task = chunk.SyncMesh();
-                tasks.Add(task);
+
+                tasks.Add(chunk.SyncMesh());
 
                 if (ChunkManhattanDistance(Vector2I.Zero, _renderOrder[i]) > Global.FastChunkUpdateMaxManhattanDistance)
                     continue;
 
-                task = chunk.SyncCollider();
-                tasks.Add(task);
+                tasks.Add(chunk.SyncCollider());
             }
             await Task.WhenAll(tasks);
 
@@ -220,7 +216,7 @@ namespace MC
 
         async Task<bool> Update(Vector2I centerChunkPos, bool isCenterChunkPosNew)
         {
-            GD.Print("Begin update!");
+            //GD.Print("Begin update!");
             //GD.Print($"Center chunk pos: {centerChunkPos}");
 
             List<Task> tasks = new();
@@ -258,8 +254,7 @@ namespace MC
                 foreach (var chunkPos in chunkPositionsToUpdate)
                 {
                     var chunk = _chunkPosMap[chunkPos];
-                    var task = chunk.SyncData(chunkPos);
-                    tasks.Add(task);
+                    tasks.Add(chunk.SyncData(chunkPos));
                 }
                 await Task.WhenAll(tasks);
             }
@@ -295,21 +290,19 @@ namespace MC
                     dirtyChunkPositions.Contains(chunkPos + Vector2I.Right))
                 {
                     chunk.IsColliderUpToDate = false;
-                    var task = chunk.SyncMesh();
                     //GD.Print($"Sync mesh: {chunkPos}");
-                    tasks.Add(task);
+                    tasks.Add(chunk.SyncMesh());
                 }
 
                 if (!chunk.IsColliderUpToDate && ChunkManhattanDistance(Vector2I.Zero, delta) <= Global.FastChunkUpdateMaxManhattanDistance)
                 {
-                    var task = chunk.SyncCollider();
                     //GD.Print($"Sync collider: {chunkPos}");
-                    tasks.Add(task);
+                    tasks.Add(chunk.SyncCollider());
                 }
             }
             await Task.WhenAll(tasks);
 
-            GD.Print("End update!");
+            //GD.Print("End update!");
 
             return true;
         }
@@ -400,14 +393,9 @@ namespace MC
 
         async void OnLocalPlayerBreakBlock(RayCastHitBlockInfo info)
         {
-            _waitingTask++;
-            GD.Print($"Right here waiting! {_waitingTask}");
             while (_isUpdating)
-            {
-                await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
-            }
-            GD.Print("End waiting!");
-            _waitingTask--;
+                { await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); }); }
+
             if (!_hasInit)
                 return;
 
@@ -428,9 +416,8 @@ namespace MC
         async void OnLocalPlayerPlaceBlock(RayCastHitBlockInfo info)
         {
             while (_isUpdating)
-            {
-                await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); });
-            }
+                { await Task.Run(() => { CallDeferred(nameof(WaitForUpdateChunkDone)); }); }
+
             if (!_hasInit)
                 return;
 

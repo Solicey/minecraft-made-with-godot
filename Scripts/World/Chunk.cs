@@ -98,13 +98,18 @@ namespace MC
             IsColliderUpToDate = false;
         }
 
+        void SetChunkPosition(Vector2I chunkPos)
+        {
+            ChunkPosition = chunkPos;
+        }
+
         public async Task SyncData(Vector2I chunkPos)
         {
             //foreach (var mesh in _meshMap.Values)
             //mesh.Mesh = null;
             Visible = false;
 
-            ChunkPosition = chunkPos;
+            CallDeferred(nameof(SetChunkPosition), chunkPos);
 
             await Task.Run(() =>
             {
@@ -137,16 +142,15 @@ namespace MC
                 _chunkVariation.TimeStampDict[blockLocalPos] = timeStamp;
             }
 
-            //GD.Print($"Chunk {chunkPos} finish await");
+            //GD.Print($"Chunk {chunkPos} finish await, array length: {array.Length}");
         }
 
         public async Task SyncMesh()
         {
-            foreach (var tool in _meshSurfaceTools.Values)
-                tool.Begin(Mesh.PrimitiveType.Triangles);
-
             await Task.Run(() =>
             {
+                foreach (var tool in _meshSurfaceTools.Values)
+                    tool.Begin(Mesh.PrimitiveType.Triangles);
 
                 var chunkWorldPos = World.ChunkPosToChunkWorldPos(ChunkPosition);
 
@@ -164,19 +168,20 @@ namespace MC
                     }
                 }
 
+                foreach (var pair in _meshSurfaceTools)
+                {
+                    pair.Value.SetMaterial(_blockManager.MaterialMap.GetValueOrDefault(pair.Key));
+                    _meshes[pair.Key] = pair.Value.Commit();
+                    pair.Value.Clear();
+                }
+
                 //GD.Print("Reach here!");
             });
 
-            foreach (var pair in _meshSurfaceTools)
-            {
-                //pair.Value.SetMaterial(_blockManager.MaterialMap.GetValueOrDefault(pair.Key));
-                _meshes[pair.Key] = pair.Value.Commit();
-                pair.Value.Clear();
-            }
-
             //GD.Print("Sync mesh done!");
 
-            CallDeferred(nameof(UpdateMesh));
+            foreach (var type in _meshes.Keys)
+                _meshMap[type].Mesh = _meshes[type];
 
             //_collisionShape.Shape = mesh.CreateTrimeshShape();
 
@@ -184,19 +189,12 @@ namespace MC
             Visible = true;
         }
 
-        void UpdateMesh()
-        {
-            foreach (var type in _meshes.Keys)
-                _meshMap[type].Mesh = _meshes[type];
-        }
-
         public async Task SyncCollider()
         {
-            foreach (var tool in _colliderSurfaceTools.Values)
-                tool.Begin(Mesh.PrimitiveType.Triangles);
-
             await Task.Run(() =>
             {
+                foreach (var tool in _colliderSurfaceTools.Values)
+                    tool.Begin(Mesh.PrimitiveType.Triangles);
 
                 var chunkWorldPos = World.ChunkPosToChunkWorldPos(ChunkPosition);
 
@@ -214,29 +212,24 @@ namespace MC
                     }
                 }
 
+                foreach (var pair in _colliderSurfaceTools)
+                {
+                    _colliders[pair.Key] = pair.Value.Commit();
+                    pair.Value.Clear();
+                }
+
                 //GD.Print("Reach here!");
 
             });
 
-            foreach (var pair in _colliderSurfaceTools)
-            {
-                _colliders[pair.Key] = pair.Value.Commit();
-                pair.Value.Clear();
-            }
-
             //GD.Print("Sync mesh done!");
 
-            CallDeferred(nameof(UpdateCollider));
+            foreach (var type in _colliders.Keys)
+                _colliderMap[type].Shape = _colliders[type].CreateTrimeshShape();
 
             //_collisionShape.Shape = mesh.CreateTrimeshShape();
 
             IsColliderUpToDate = true;
-        }
-
-        void UpdateCollider()
-        {
-            foreach (var type in _colliders.Keys)
-                _colliderMap[type].Shape = _colliders[type].CreateTrimeshShape();
         }
 
         public BlockType GetLocalBlockType(Vector3I blockLocalPos)
